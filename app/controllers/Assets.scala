@@ -23,7 +23,7 @@ class Assets @Inject() (assets: controllers.CustomAssets,
     val path = rootPath
     val parentFile = new File(path)
     val parentUrl = parentFile.toURI.toString
-    val currentUrl = URI.create(parentUrl + file1)
+    val currentUrl = new URI(parentUrl + file1)
     val fileModel = new File(currentUrl)
     if (! fileModel.exists) {
       Action.async { implicit request =>
@@ -32,12 +32,12 @@ class Assets @Inject() (assets: controllers.CustomAssets,
     } else if (fileModel.isDirectory) {
       Action.async { implicit request =>
         val fileUrls = fileModel.listFiles().toList.map { s =>
-          val fileUrlString = s.toURI.toString.drop(new File(rootPath).toURI.toString.size)
+          val fileUrlString = s.toURI.toString.drop(parentUrl.size)
           assist.controllers.routes.Assets.at(fileUrlString) -> s.getName
         }
         val periPath = fileModel.getParentFile.toURI.toString
         val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
-          val result = periPath.drop(new File(rootPath).toURI.toString.size)
+          val result = periPath.drop(parentUrl.size)
           assist.controllers.routes.Assets.at(result)
         } else {
           assist.controllers.routes.Assets.root
