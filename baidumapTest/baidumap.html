@@ -46,6 +46,9 @@
 		<div id="allmap" style="overflow:hidden;zoom:1;position:relative;">
 			<div id="map" style="height:100%;-webkit-transition: all 0.5s ease-in-out;transition: all 0.5s ease-in-out;"></div>
 		</div>
+		<div>
+			<input type="text" data-bind="value: searchText" /><button data-bind="click: function() { search(); }">搜索</button>
+		</div>
 		<div id="result">
 			<button type="button" data-bind="click: function() { alert(overlays().length); }">获取绘制的覆盖物个数</button>
 			<button type="button" data-bind="click: function() { clearAllOverlays(); }">清除所有覆盖物</button>

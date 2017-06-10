@@ -41,6 +41,16 @@ $(function() {
         self.points = ko.observableArray([]);
         self.currentCSV = ko.observable("");
         self.singleRowCSV = ko.observable("");
+        self.searchText = ko.observable("");
+
+        var local = new BMap.LocalSearch(map, {
+            renderOptions: { map: map }
+        });
+
+        self.search = function() {
+            var text = self.searchText();
+            local.search(text);
+        };
 
         self.lightPoint = function(pointModel) {
             baiduMap.addOverlay(pointModel.iconOverlay);              // 将标注添加到地图中
@@ -159,6 +169,27 @@ $(function() {
 // 百度地图API功能
     var map = new BMap.Map("map");
     var poi = new BMap.Point(116.307852, 40.057031);
+
+    var top_left_control = new BMap.ScaleControl({anchor: BMAP_ANCHOR_TOP_LEFT});// 左上角，添加比例尺
+    // 添加带有定位的导航控件
+    var top_left_navigation = new BMap.NavigationControl({
+        // 靠左上角位置
+        anchor: BMAP_ANCHOR_TOP_LEFT,
+        // LARGE类型
+        type: BMAP_NAVIGATION_CONTROL_LARGE,
+        // 启用显示定位
+        enableGeolocation: true
+    });
+    // 添加定位控件
+    var geolocationControl = new BMap.GeolocationControl();
+    geolocationControl.addEventListener("locationError",function(e){
+        // 定位失败事件
+        alert(e.message);
+    });
+
+    map.addControl(top_left_control);
+    map.addControl(top_left_navigation);
+    map.addControl(geolocationControl);
 
     var viewModel = new ViewModel(map);
     ko.applyBindings(viewModel);
