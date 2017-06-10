@@ -51,6 +51,6 @@ class Assets @Inject() (assets: controllers.CustomAssets,
   }
 
   def root = at("")
-  def baidu(file1: String) = assets.at("/home/djx314/pro/workspace/baidumapTest", file1)
+  def baidu(file1: String) = assets.at("/home/djx314/pro/workspace/abc/baidumapTest", file1)
 
 }
