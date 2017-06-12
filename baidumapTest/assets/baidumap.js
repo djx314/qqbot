@@ -32,6 +32,38 @@ $(function() {
         strokeStyle: 'solid' //边线的样式，solid或dashed。
     };
 
+    var heshanOptions = {
+        strokeColor: "#66ccff",    //边线颜色。
+        fillColor: "blue",      //填充颜色。当参数为空时，圆形将没有填充效果。
+        strokeWeight: 3,       //边线的宽度，以像素为单位。
+        strokeOpacity: 0.7,	   //边线透明度，取值范围0 - 1。
+        fillOpacity: 0.1,      //填充的透明度，取值范围0 - 1。
+        strokeStyle: 'solid' //边线的样式，solid或dashed。
+    };
+
+    var heshanquyu = [];
+
+    var getBoundary = function(baiduMap) {
+        var bdary = new BMap.Boundary();
+        bdary.get("广东省江门市鹤山市", function(rs){       //获取行政区域
+            baiduMap.clearOverlays();        //清除地图覆盖物
+
+            var count = rs.boundaries.length; //行政区域的点有多少个
+            if (count === 0) {
+                alert('未能获取当前输入行政区域');
+                return ;
+            }
+            var pointArray = [];
+            for (var i = 0; i < count; i++) {
+                var ply = new BMap.Polygon(rs.boundaries[i], heshanOptions/*{strokeWeight: 2, strokeColor: "#ff0000"}*/); //建立多边形覆盖物
+                baiduMap.addOverlay(ply);  //添加覆盖物
+                pointArray = pointArray.concat(ply.getPath());
+                heshanquyu.push(ply);
+            }
+            baiduMap.setViewport(pointArray);    //调整视野
+        });
+    };
+
     var ViewModel = function(baiduMap) {
         var self = this;
 
@@ -61,7 +93,16 @@ $(function() {
 
         self.clearAllOverlays = function() {
             for(var i = 0; i < self.overlays().length; i++) {
-                baiduMap.removeOverlay(self.overlays()[i]);
+                var currentOverLay = self.overlays()[i];
+                var isConfirm = false;
+                for (var j = 0; j < heshanquyu.length; j++) {
+                    if (heshanquyu[j] === currentOverLay) {
+                        isConfirm = true;
+                    }
+                }
+                if (isConfirm === false) {
+                    baiduMap.removeOverlay(currentOverLay);
+                }
             }
             self.overlays([]);
         };
@@ -124,7 +165,7 @@ $(function() {
                 sumY += eachPoint.lat;
             }
             var bPoint = new BMap.Point(sumX / points.length, sumY / points.length);
-            baiduMap.centerAndZoom(bPoint, 16);
+            baiduMap.centerAndZoom(bPoint, baiduMap.getZoom());
             bindOerlay(baiduMap, polyline, self);
         };
 
@@ -168,7 +209,11 @@ $(function() {
 
 // 百度地图API功能
     var map = new BMap.Map("map");
-    var poi = new BMap.Point(116.307852, 40.057031);
+    var poi = new BMap.Point(112.968307, 22.771869);
+    map.centerAndZoom(poi, 16);
+    getBoundary(map);
+    /*setTimeout(function(){
+    }, 2000);*/
 
     var top_left_control = new BMap.ScaleControl({anchor: BMAP_ANCHOR_TOP_LEFT});// 左上角，添加比例尺
     // 添加带有定位的导航控件
@@ -194,7 +239,6 @@ $(function() {
     var viewModel = new ViewModel(map);
     ko.applyBindings(viewModel);
 
-    map.centerAndZoom(poi, 16);
     map.enableScrollWheelZoom();
 
     //清除除了目标以外的覆盖物
@@ -202,8 +246,19 @@ $(function() {
         var overlayToRemove = [];
         for (var i = 0; i < baiduMap.getOverlays().length; i++) {
             var current = baiduMap.getOverlays()[i];
+            var needToRemove = true;
             if (target === current) {
+                needToRemove = false;
             } else {
+            }
+            var currentOverLay = baiduMap.getOverlays()[i];
+            //var isConfirm = false;
+            for (var j = 0; j < heshanquyu.length; j++) {
+                if (heshanquyu[j] === currentOverLay) {
+                    needToRemove = false;
+                }
+            }
+            if (needToRemove === true) {
                 overlayToRemove.push(baiduMap.getOverlays()[i]);
             }
         }
