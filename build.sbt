@@ -15,4 +15,5 @@ version := "0.0.1"
 libraryDependencies += guice
 scalaVersion := "2.11.11"
 fork in run := false
-enablePlugins(play.sbt.PlayScala)
+enablePlugins(play.sbt.PlayScala, PlayNettyServer)
+disablePlugins(PlayAkkaHttpServer)
