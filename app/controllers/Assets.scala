@@ -2,25 +2,27 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import javax.inject.{ Inject, Named, Singleton }
+import javax.inject.{Inject, Named, Singleton}
 
-import play.api.Configuration
-import play.api.mvc.{ AbstractController, ControllerComponents }
+import models.FileInfo
+import play.api.mvc.{AbstractController, ControllerComponents}
+import utils.{FileUtil, HentaiConfig}
 
 import scala.concurrent.Future
 
 @Singleton
 class Assets @Inject() (
   @Named("hentai") assets: controllers.AssetsBuilder,
-    components: ControllerComponents,
-    configure: Configuration
+  commonAssets: controllers.Assets,
+  components: ControllerComponents,
+  hentaiConfig: HentaiConfig,
+  fileUtil: FileUtil
 ) extends AbstractController(components) {
 
   implicit val ec = defaultExecutionContext
 
-  val rootPath = {
-    configure.get[String]("djx314.hentai.root.path")
-  }
+  val rootPath = hentaiConfig.rootPath
+
   def at(file1: String) = {
     val path = rootPath
     val parentFile = new File(path)
@@ -33,9 +35,16 @@ class Assets @Inject() (
       }
     } else if (fileModel.isDirectory) {
       Action.async { implicit request =>
-        val fileUrls = fileModel.listFiles().toList.map { s =>
+        val fileUrls = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
           val fileUrlString = s.toURI.toString.drop(parentUrl.size)
-          assist.controllers.routes.Assets.at(fileUrlString) -> s.getName
+          val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
+          val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName)
+          FileInfo(
+            fileName = s.getName,
+            requestUrl = assist.controllers.routes.Assets.at(fileUrlString),
+            temfileExists = temExists,
+            canEncode = canConvert
+          )
         }
         val periPath = fileModel.getParentFile.toURI.toString
         val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
@@ -53,5 +62,7 @@ class Assets @Inject() (
   }
 
   def root = at("")
+
+  def staticAt(root: String, path: String) = commonAssets.at(root, path)
 
 }

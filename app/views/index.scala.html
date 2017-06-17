@@ -1,20 +1,78 @@
-@(parent: play.api.mvc.Call)(files: List[(play.api.mvc.Call, String)])
+@(parent: play.api.mvc.Call)(files: List[models.FileInfo])
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <title>模板数据结构</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1">
+    <title>Hello Amaze UI</title>
+
+        <!-- Set render engine for 360 browser -->
+    <meta name="renderer" content="webkit">
+
+        <!-- No Baidu Siteapp-->
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+
+    <link rel="icon" type="image/png" href="assets/i/favicon.png">
+
+        <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="assets/i/app-icon72x72@@2x.png">
+
+        <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Amaze UI"/>
+    <link rel="apple-touch-icon-precomposed" href="assets/i/app-icon72x72@@2x.png">
+
+        <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="assets/i/app-icon72x72@@2x.png">
+    <meta name="msapplication-TileColor" content="#0e90d2">
+
+    <link rel="stylesheet" href="@assist.controllers.routes.Assets.staticAt("frameworks/AmazeUI-2.7.2/assets/css/amazeui.css")" media="all">
     <style type="text/css">
     body {}
     </style>
 </head>
 <body>
-    <div><a href="@parent">上一级目录</a></div>
-    @for((path, name) <- files){
-        <div>
-            <a href="@path">@name</a>
+    <header data-am-widget="header"
+    class="am-header am-header-default">
+        <h1 class="am-header-title">
+            <a href="@parent" class="">
+            上一级目录
+            </a>
+        </h1>
+    </header>
+    <div data-am-widget="list_news" class="am-list-news am-list-news-default" >
+        <div class="am-list-news-bd">
+            <ul class="am-list">
+
+                @for(fileInfo <- files){
+                    <li class="am-g am-list-item-desced">
+                        <a href="@{fileInfo.requestUrl}" class="am-list-item-hd">@{fileInfo.fileName}</a>
+                        <div class="am-list-item-text" style="overflow: hidden; display: block;">
+                        @if((!fileInfo.temfileExists) && fileInfo.canEncode) {
+                            <form method="get" action="@{fileInfo.requestUrl}" style="float: left; overflow: hidden;">
+                                <input type="submit" value="不能观看？立刻转码" class="am-btn am-btn-warning am-round am-btn-sm" />
+                            </form>
+                            <form method="get" action="@{fileInfo.requestUrl}" style="float: left; overflow: hidden;">
+                                <input type="submit" value="不能观看？立刻转码" class="am-btn am-btn-warning am-round am-btn-sm" />
+                            </form>
+                        } else {
+
+                        }
+                        </div>
+                    </li>
+                }
+            </ul>
         </div>
-    }
+    </div>
+    <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/jquery/jquery-1.12.4.min.js")"></script>
+    <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/AmazeUI-2.7.2/assets/js/amazeui.js")"></script>
 </body>
 </html>
