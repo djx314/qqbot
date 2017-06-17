@@ -2,9 +2,9 @@ package controllers
 
 import java.io.File
 import java.net.URL
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
-import play.api.http.{FileMimeTypes, HttpErrorHandler}
+import play.api.http.{ FileMimeTypes, HttpErrorHandler }
 
 @Singleton
 class CustomAssets @Inject() (errorHandler: HttpErrorHandler, meta: CustomAssetsMetadata) extends AssetsBuilder(errorHandler, meta)
@@ -22,6 +22,6 @@ object FileUrlGen extends (String => Option[URL]) {
 
 @Singleton
 class CustomAssetsMetadata @Inject() (
-                             config: AssetsConfiguration,
-                             fileMimeTypes: FileMimeTypes
-                           ) extends DefaultAssetsMetadata(config, FileUrlGen, fileMimeTypes)
+  config: AssetsConfiguration,
+  fileMimeTypes: FileMimeTypes
+) extends DefaultAssetsMetadata(config, FileUrlGen, fileMimeTypes)

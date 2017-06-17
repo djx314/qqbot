@@ -1,5 +1,3 @@
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file        assist.controllers.Assets.at(file)
 GET        /assets        assist.controllers.Assets.root
-
-GET        /baidu/*file        assist.controllers.Assets.baidu(file)

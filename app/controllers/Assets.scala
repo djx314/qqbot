@@ -2,22 +2,24 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Named, Singleton }
 
 import play.api.Configuration
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.{ AbstractController, ControllerComponents }
 
 import scala.concurrent.Future
 
 @Singleton
-class Assets @Inject() (assets: controllers.CustomAssets,
-                        components: ControllerComponents,
-                        configure: Configuration) extends AbstractController(components) {
+class Assets @Inject() (
+  @Named("hentai") assets: controllers.AssetsBuilder,
+    components: ControllerComponents,
+    configure: Configuration
+) extends AbstractController(components) {
 
   implicit val ec = defaultExecutionContext
 
   val rootPath = {
-    configure.get[String]("djx314.path")
+    configure.get[String]("djx314.hentai.root.path")
   }
   def at(file1: String) = {
     val path = rootPath
@@ -25,7 +27,7 @@ class Assets @Inject() (assets: controllers.CustomAssets,
     val parentUrl = parentFile.toURI.toString
     val currentUrl = new URI(parentUrl + file1)
     val fileModel = new File(currentUrl)
-    if (! fileModel.exists) {
+    if (!fileModel.exists) {
       Action.async { implicit request =>
         Future successful NotFound("找不到目录")
       }
@@ -51,6 +53,5 @@ class Assets @Inject() (assets: controllers.CustomAssets,
   }
 
   def root = at("")
-  def baidu(file1: String) = assets.at("E:/pro/workspace/baiduMap/baidumapTest", file1)
 
 }
