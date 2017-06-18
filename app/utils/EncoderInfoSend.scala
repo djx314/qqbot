@@ -26,7 +26,7 @@ class EncoderInfoSend @Inject() (
     val currentUrl = new URI(parentUrl + fileStr)
     val sourceFile = new File(currentUrl)
 
-    val key = s"里番-${sourceFile.getName}".take(14)
+    val key = s"里番-${sourceFile.getName}"
 
     println(s"发送里番文件:${sourceFile.getCanonicalPath},文件是否存在:${sourceFile.exists()}")
 
