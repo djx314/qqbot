@@ -2,3 +2,7 @@
 GET        /assets/*file        assist.controllers.Assets.at(file)
 GET        /assets        assist.controllers.Assets.root
 GET        /staticAssets/*file        assist.controllers.Assets.staticAt(root = "/public", file)
+GET        /encode/*file        assist.controllers.Encoder.encodeFile(file)
+
+POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
+GET     /uploadSuccessFile   assist.controllers.Encoder.encodeSuccessPage(refer: String)

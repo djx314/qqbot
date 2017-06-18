@@ -2,9 +2,11 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
+import java.util.Date
 import javax.inject.{Inject, Named, Singleton}
 
 import models.FileInfo
+import org.apache.commons.io.FileUtils
 import play.api.mvc.{AbstractController, ControllerComponents}
 import utils.{FileUtil, HentaiConfig}
 
@@ -37,13 +39,32 @@ class Assets @Inject() (
       Action.async { implicit request =>
         val fileUrls = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
           val fileUrlString = s.toURI.toString.drop(parentUrl.size)
+
           val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
+
           val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName)
+          val tempString = tempFile.toURI.toString.drop(parentUrl.size)
+
+          val tempDateFile = new File(tempFile.getParentFile, s.getName + ".EncodeDate")
+          val isEncoding = if (tempDateFile.exists()) {
+            val dateString = FileUtils.readFileToString(tempDateFile, "utf-8")
+            val encodeDate = hentaiConfig.dateFormat.parse(dateString)
+            if ((new Date().getTime - encodeDate.getTime) > (20 * 60 * 1000)) {
+              false
+            } else
+              true
+          } else {
+            false
+          }
+
           FileInfo(
             fileName = s.getName,
             requestUrl = assist.controllers.routes.Assets.at(fileUrlString),
+            tempUrl = assist.controllers.routes.Assets.at(tempString),
+            encodeUrl = assist.controllers.routes.Encoder.encodeFile(fileUrlString),
             temfileExists = temExists,
-            canEncode = canConvert
+            canEncode = canConvert,
+            isEncoding = isEncoding
           )
         }
         val periPath = fileModel.getParentFile.toURI.toString
