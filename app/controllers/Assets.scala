@@ -8,6 +8,7 @@ import javax.inject.{Inject, Named, Singleton}
 import models.FileInfo
 import org.apache.commons.io.FileUtils
 import play.api.mvc.{AbstractController, ControllerComponents}
+import play.utils.UriEncoding
 import utils.{FileUtil, HentaiConfig}
 
 import scala.concurrent.Future
@@ -43,7 +44,7 @@ class Assets @Inject() (
           val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
 
           val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName)
-          val tempString = tempFile.toURI.toString.drop(parentUrl.size)
+          //val tempString = tempFile.toURI.toString.drop(parentUrl.size)
 
           val tempDateFile = new File(tempFile.getParentFile, s.getName + ".EncodeDate")
           val isEncoding = if (tempDateFile.exists()) {
@@ -60,7 +61,7 @@ class Assets @Inject() (
           FileInfo(
             fileName = s.getName,
             requestUrl = assist.controllers.routes.Assets.at(fileUrlString),
-            tempUrl = assist.controllers.routes.Assets.at(tempString),
+            tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString),
             encodeUrl = assist.controllers.routes.Encoder.encodeFile(fileUrlString),
             temfileExists = temExists,
             canEncode = canConvert,
@@ -85,5 +86,43 @@ class Assets @Inject() (
   def root = at("")
 
   def staticAt(root: String, path: String) = commonAssets.at(root, path)
+
+  def tempFile(file1: String) = {
+    val path = rootPath
+    val parentFile = new File(path)
+    val parentUrl = parentFile.toURI.toString
+    val currentUrl = new URI(parentUrl + file1)
+    val fileModel = new File(currentUrl)
+    if (!fileModel.exists) {
+      Action.async { implicit request =>
+        Future successful NotFound("找不到文件")
+      }
+    } else if (fileModel.isDirectory) {
+      Action.async { implicit request =>
+        Future successful NotFound("找不到文件")
+      }
+    } else {
+      val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
+      val tempFile = new File(tempDir, fileModel.getName + ".mp4")
+      if (!tempFile.exists) {
+        Action.async { implicit request =>
+          Future successful NotFound("缓存文件不存在")
+        }
+      } else {
+        val path = rootPath
+        val parentFile = new File(path)
+        val parentUrl = parentFile.getCanonicalPath
+        val tempString = tempFile.getCanonicalPath.drop(parentUrl.size)
+
+        //val tempFinalString = tempString.replaceAllLiterally(File.separator, "/")
+
+        println(tempString)
+        println(tempFile.getCanonicalPath)
+        //println(tempFinalString)
+        assets.at(path, UriEncoding.encodePathSegment(tempString, "utf-8"))
+        //assets.at(path, tempFinalString)
+      }
+    }
+  }
 
 }

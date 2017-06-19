@@ -6,3 +6,5 @@ GET        /encode/*file        assist.controllers.Encoder.encodeFile(file)
 
 POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
 GET     /uploadSuccessFile   assist.controllers.Encoder.encodeSuccessPage(refer: String)
+
+GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)

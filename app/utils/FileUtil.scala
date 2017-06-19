@@ -15,7 +15,7 @@ trait FileUtil {
   def canEncode(file: File, suffix: Seq[String]): Boolean = {
     if (file.getName.lastIndexOf('.') >= 0) {
       val fileSuffix = file.getName.takeRight(file.getName.size - file.getName.lastIndexOf('.') - 1)
-      println(fileSuffix)
+      //println(fileSuffix)
       suffix.exists(_ == fileSuffix)
     } else {
       false

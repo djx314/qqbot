@@ -10,7 +10,7 @@ lazy val playVersion = play.core.PlayVersion.current
 
 transitiveClassifiers in ThisBuild := Seq("sources", "jar", "javadoc")
 
-name := "freedom"
+name := "hentaidesu"
 version := "0.0.1"
 
 libraryDependencies += guice
