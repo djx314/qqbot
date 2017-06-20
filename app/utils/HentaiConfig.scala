@@ -11,7 +11,9 @@ trait HentaiConfig {
   val encodeSuffix: Seq[String]
   val tempDirectoryName: String
   val encoderUrl: String
+  val isEncodingrUrl: String
   val selfUrl: String
+  val encodeInfoSuffix: String = "EncodeInfo"
 
   def dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
@@ -27,6 +29,7 @@ class HentaiConfigImpl @Inject() (
   override val tempDirectoryName = configuration.get[String]("djx314.hentai.encode.temp.directory.name")
 
   override val encoderUrl = configuration.get[String]("djx314.hentai.url.encoder")
+  override val isEncodingrUrl = configuration.get[String]("djx314.hentai.url.isEncoding")
   override val selfUrl = configuration.get[String]("djx314.hentai.url.self")
 
 }

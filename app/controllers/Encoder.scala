@@ -48,11 +48,13 @@ class Encoder @Inject() (
       Action.async { implicit request =>
         val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
         tempDir.mkdirs()
-        val tempDateFile = new File(tempDir, fileModel.getName + ".EncodeDate")
-        val format = hentaiConfig.dateFormat
-        val dateString = format.format(new Date())
-        FileUtils.writeStringToFile(tempDateFile, dateString, "utf-8")
-        encoderInfoSend.uploadVideo(file1)
+        encoderInfoSend.uploadVideo(file1).map { encodeUUID =>
+          val tempDateFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
+          val format = hentaiConfig.dateFormat
+          val dateString = format.format(new Date())
+          val writeString = s"$encodeUUID\r\n$dateString"
+          FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
+        }
         val referUrl = request.headers.get("Referer").getOrElse(assist.controllers.routes.Assets.root().toString)
         Future successful Redirect(assist.controllers.routes.Encoder.encodeSuccessPage(referUrl))
       }

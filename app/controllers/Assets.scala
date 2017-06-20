@@ -7,11 +7,13 @@ import javax.inject.{Inject, Named, Singleton}
 
 import models.FileInfo
 import org.apache.commons.io.FileUtils
+import play.api.libs.ws.WSClient
 import play.api.mvc.{AbstractController, ControllerComponents}
 import play.utils.UriEncoding
 import utils.{FileUtil, HentaiConfig}
 
 import scala.concurrent.Future
+import scala.util.matching.Regex
 
 @Singleton
 class Assets @Inject() (
@@ -19,6 +21,7 @@ class Assets @Inject() (
   commonAssets: controllers.Assets,
   components: ControllerComponents,
   hentaiConfig: HentaiConfig,
+  wSClient: WSClient,
   fileUtil: FileUtil
 ) extends AbstractController(components) {
 
@@ -38,7 +41,7 @@ class Assets @Inject() (
       }
     } else if (fileModel.isDirectory) {
       Action.async { implicit request =>
-        val fileUrls = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
+        val fileUrlsF = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
           val fileUrlString = s.toURI.toString.drop(parentUrl.size)
 
           val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
@@ -46,27 +49,49 @@ class Assets @Inject() (
           val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName)
           //val tempString = tempFile.toURI.toString.drop(parentUrl.size)
 
-          val tempDateFile = new File(tempFile.getParentFile, s.getName + ".EncodeDate")
-          val isEncoding = if (tempDateFile.exists()) {
-            val dateString = FileUtils.readFileToString(tempDateFile, "utf-8")
-            val encodeDate = hentaiConfig.dateFormat.parse(dateString)
-            if ((new Date().getTime - encodeDate.getTime) > (20 * 60 * 1000)) {
-              false
-            } else
-              true
+          val tempDateFile = new File(tempFile.getParentFile, s.getName + "." + hentaiConfig.encodeInfoSuffix)
+          val isEncodingF = if (tempDateFile.exists()) {
+            try {
+              val dateStrings = FileUtils.readLines(tempDateFile, "utf-8")
+              val uuid = dateStrings.get(0)
+              val encodeDate = hentaiConfig.dateFormat.parse(dateStrings.get(1))
+              println(uuid)
+              wSClient.url(hentaiConfig.isEncodingrUrl).withQueryStringParameters("uuid" -> uuid).get().map { wsResult =>
+                println(wsResult)
+
+                val resultModel = if (wsResult.status == 200) {
+                  java.lang.Boolean.valueOf(wsResult.body): Boolean
+                } else {
+                  false
+                }
+                println(resultModel)
+                resultModel
+              }
+              /*if ((new Date().getTime - encodeDate.getTime) > (20 * 60 * 1000)) {
+                false
+              } else
+                true*/
+            } catch {
+              case e: Exception =>
+                e.printStackTrace
+                tempDateFile.deleteOnExit()
+                Future successful false
+            }
           } else {
-            false
+            Future successful false
           }
 
-          FileInfo(
-            fileName = s.getName,
-            requestUrl = assist.controllers.routes.Assets.at(fileUrlString),
-            tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString),
-            encodeUrl = assist.controllers.routes.Encoder.encodeFile(fileUrlString),
-            temfileExists = temExists,
-            canEncode = canConvert,
-            isEncoding = isEncoding
-          )
+          isEncodingF.map { isEncoding =>
+            FileInfo(
+              fileName = s.getName,
+              requestUrl = assist.controllers.routes.Assets.at(fileUrlString),
+              tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString),
+              encodeUrl = assist.controllers.routes.Encoder.encodeFile(fileUrlString),
+              temfileExists = temExists,
+              canEncode = canConvert,
+              isEncoding = isEncoding
+            )
+          }
         }
         val periPath = fileModel.getParentFile.toURI.toString
         val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
@@ -76,7 +101,9 @@ class Assets @Inject() (
           assist.controllers.routes.Assets.root
         }
 
-        Future successful Ok(views.html.index(preiRealPath)(fileUrls))
+        Future.sequence(fileUrlsF).map { fileUrls =>
+          Ok(views.html.index(preiRealPath)(fileUrls))
+        }
       }
     } else {
       assets.at(path, file1)

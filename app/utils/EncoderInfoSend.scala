@@ -18,7 +18,7 @@ class EncoderInfoSend @Inject() (
                                 hentaiConfig: HentaiConfig
                                 ) {
 
-  def uploadVideo(fileStr: String): Future[RequestInfo] = Future {
+  def uploadVideo(fileStr: String): Future[String] = Future {
 
     val path = hentaiConfig.rootPath
     val parentFile = new File(path)
@@ -42,9 +42,11 @@ class EncoderInfoSend @Inject() (
           Nil))
       .map { wsResult =>
         val resultModel = if (wsResult.status == 200) {
-          RequestInfo(true, wsResult.body)
+          //RequestInfo(true, wsResult.body)
+          wsResult.body
         } else {
           RequestInfo(false, s"请求失败，错误码${wsResult.body}")
+          wsResult.body
         }
         println(resultModel)
         resultModel
