@@ -8,3 +8,6 @@ POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
 GET     /uploadSuccessFile   assist.controllers.Encoder.encodeSuccessPage(refer: String)
 
 GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)
+
+GET     /deleteTempDir/*file   assist.controllers.Assets.deleteTempDir(file)
+GET     /deleteRootTempDir   assist.controllers.Assets.deleteRootTempDir

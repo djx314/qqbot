@@ -2,6 +2,7 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
+import java.nio.file.Files
 import java.util.Date
 import javax.inject.{Inject, Named, Singleton}
 
@@ -101,8 +102,16 @@ class Assets @Inject() (
           assist.controllers.routes.Assets.root
         }
 
+        val currentPath = fileModel.toURI.toString
+        val deleteTempUrl = if (currentPath.startsWith(parentFile.toURI.toString) && currentPath != parentUrl) {
+          val result = currentPath.drop(parentUrl.size)
+          assist.controllers.routes.Assets.deleteTempDir(result)
+        } else {
+          assist.controllers.routes.Assets.deleteRootTempDir
+        }
+
         Future.sequence(fileUrlsF).map { fileUrls =>
-          Ok(views.html.index(preiRealPath)(fileUrls))
+          Ok(views.html.index(preiRealPath)(deleteTempUrl)(fileUrls))
         }
       }
     } else {
@@ -151,5 +160,36 @@ class Assets @Inject() (
       }
     }
   }
+
+  def deleteTempDir(file1: String) = {
+    val path = rootPath
+    val parentFile = new File(path)
+    val parentUrl = parentFile.toURI.toString
+    val currentUrl = new URI(parentUrl + file1)
+    val fileModel = new File(currentUrl)
+
+    val currentPath = fileModel.toURI.toString
+    val redirectUrl = if (currentPath.startsWith(parentFile.toURI.toString) && currentPath != parentUrl) {
+      val result = currentPath.drop(parentUrl.size)
+      assist.controllers.routes.Assets.at(file1)
+    } else {
+      assist.controllers.routes.Assets.root
+    }
+
+    Action.async { implicit request =>
+      if (!fileModel.exists) {
+          Future successful Redirect(redirectUrl)
+      } else if (fileModel.isDirectory) {
+          val temFile = new File(fileModel, hentaiConfig.tempDirectoryName)
+          FileUtils.deleteDirectory(temFile)
+          Future successful Redirect(redirectUrl)
+      } else {
+          Future successful Redirect(redirectUrl)
+      }
+    }
+
+  }
+
+  def deleteRootTempDir = deleteTempDir("")
 
 }
