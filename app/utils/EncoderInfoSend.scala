@@ -2,21 +2,23 @@ package utils
 
 import java.io.File
 import java.net.URI
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
-import akka.stream.scaladsl.{FileIO, Source}
+import akka.stream.scaladsl.{ FileIO, Source }
 import models.RequestInfo
 import play.api.libs.ws.WSClient
-import play.api.mvc.MultipartFormData.{DataPart, FilePart}
+import play.api.mvc.MultipartFormData.{ DataPart, FilePart }
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class EncoderInfoSend @Inject() (
-                                ws: WSClient,
-                                hentaiConfig: HentaiConfig
-                                ) {
+    ws: WSClient,
+    hentaiConfig: HentaiConfig,
+    defaultExecutionContext: scala.concurrent.ExecutionContext
+) {
+
+  implicit val _ec = defaultExecutionContext
 
   def uploadVideo(fileStr: String): Future[String] = Future {
 
@@ -39,7 +41,9 @@ class EncoderInfoSend @Inject() (
           //DataPart("encodeType", "FormatFactoryEncoder") ::
           DataPart("encodeType", "ffmpegEncoder") ::
           DataPart("videoLength", 1.toString) ::
-          Nil))
+          Nil
+      )
+    )
       .map { wsResult =>
         val resultModel = if (wsResult.status == 200) {
           //RequestInfo(true, wsResult.body)

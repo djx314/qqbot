@@ -2,31 +2,27 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import java.nio.file.Files
-import java.util.Date
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{ Inject, Named, Singleton }
 
 import models.FileInfo
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.InjectedController
 import play.utils.UriEncoding
-import utils.{FileUtil, HentaiConfig}
+import utils.{ FileUtil, HentaiConfig }
 
 import scala.concurrent.Future
-import scala.util.matching.Regex
 
 @Singleton
 class Assets @Inject() (
-  @Named("hentai") assets: controllers.AssetsBuilder,
-  commonAssets: controllers.Assets,
-  components: ControllerComponents,
-  hentaiConfig: HentaiConfig,
-  wSClient: WSClient,
-  fileUtil: FileUtil
-) extends AbstractController(components) {
+    @Named("hentai") assets: controllers.AssetsBuilder,
+    commonAssets: controllers.Assets,
+    hentaiConfig: HentaiConfig,
+    wSClient: WSClient,
+    fileUtil: FileUtil
+) extends InjectedController {
 
-  implicit val ec = defaultExecutionContext
+  implicit def ec = defaultExecutionContext
 
   val rootPath = hentaiConfig.rootPath
 
@@ -178,13 +174,13 @@ class Assets @Inject() (
 
     Action.async { implicit request =>
       if (!fileModel.exists) {
-          Future successful Redirect(redirectUrl)
+        Future successful Redirect(redirectUrl)
       } else if (fileModel.isDirectory) {
-          val temFile = new File(fileModel, hentaiConfig.tempDirectoryName)
-          FileUtils.deleteDirectory(temFile)
-          Future successful Redirect(redirectUrl)
+        val temFile = new File(fileModel, hentaiConfig.tempDirectoryName)
+        FileUtils.deleteDirectory(temFile)
+        Future successful Redirect(redirectUrl)
       } else {
-          Future successful Redirect(redirectUrl)
+        Future successful Redirect(redirectUrl)
       }
     }
 

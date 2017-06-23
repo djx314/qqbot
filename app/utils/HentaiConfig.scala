@@ -1,7 +1,7 @@
 package utils
 
 import java.text.SimpleDateFormat
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.Configuration
 
@@ -21,8 +21,8 @@ trait HentaiConfig {
 
 @Singleton
 class HentaiConfigImpl @Inject() (
-                                 configuration: Configuration
-                                 ) extends HentaiConfig {
+    configuration: Configuration
+) extends HentaiConfig {
 
   override val rootPath = configuration.get[String]("djx314.hentai.root.path")
   override val encodeSuffix = configuration.get[Seq[String]]("djx314.hentai.encode.suffix")

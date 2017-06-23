@@ -2,14 +2,13 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import java.text.SimpleDateFormat
 import java.util.Date
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{ Inject, Named, Singleton }
 
-import models.{FileInfo, RequestInfo, VideoInfo}
+import models.{ RequestInfo, VideoInfo }
 import org.apache.commons.io.FileUtils
-import play.api.mvc.{AbstractController, ControllerComponents}
-import utils.{EncoderInfoSend, FileUtil, HentaiConfig}
+import play.api.mvc.InjectedController
+import utils.{ EncoderInfoSend, FileUtil, HentaiConfig }
 
 import scala.concurrent.Future
 import io.circe.syntax._
@@ -18,17 +17,15 @@ import play.api.libs.circe.Circe
 
 @Singleton
 class Encoder @Inject() (
-  @Named("hentai") assets: controllers.AssetsBuilder,
-  components: ControllerComponents,
-  hentaiConfig: HentaiConfig,
-  fileUtil: FileUtil,
-  encoderInfoSend: EncoderInfoSend
-) extends AbstractController(components) with Circe {
+    @Named("hentai") assets: controllers.AssetsBuilder,
+    hentaiConfig: HentaiConfig,
+    fileUtil: FileUtil,
+    encoderInfoSend: EncoderInfoSend
+) extends InjectedController with Circe {
 
-  implicit val ec = defaultExecutionContext
+  implicit def ec = defaultExecutionContext
 
   val rootPath = hentaiConfig.rootPath
-
 
   def encodeFile(file1: String) = {
     val path = rootPath

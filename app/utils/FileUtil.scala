@@ -1,7 +1,7 @@
 package utils
 
 import java.io.File
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 trait FileUtil {
 
@@ -25,5 +25,4 @@ trait FileUtil {
 }
 
 @Singleton
-class FileUtilImpl @Inject() (
-                                 ) extends FileUtil
+class FileUtilImpl @Inject() () extends FileUtil

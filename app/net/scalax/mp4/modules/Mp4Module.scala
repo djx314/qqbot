@@ -3,7 +3,7 @@ package net.scalax.mp4.modules
 import com.google.inject.AbstractModule
 import com.google.inject.name.Names
 import controllers.CustomAssets
-import utils.{FileUtil, FileUtilImpl, HentaiConfig, HentaiConfigImpl}
+import utils.{ FileUtil, FileUtilImpl, HentaiConfig, HentaiConfigImpl }
 
 class Mp4Module extends AbstractModule {
 

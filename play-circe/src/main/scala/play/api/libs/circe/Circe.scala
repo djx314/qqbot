@@ -1,6 +1,6 @@
 package play.api.libs.circe
 
-import akka.stream.scaladsl.{ Flow, Sink}
+import akka.stream.scaladsl.{ Flow, Sink }
 import akka.util.ByteString
 import cats.syntax.either._
 import io.circe._
@@ -14,7 +14,6 @@ import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 trait Circe extends Status { this: BaseController =>
-
 
   private val defaultPrinter = Printer.noSpaces
 
@@ -104,7 +103,6 @@ trait Circe extends Status { this: BaseController =>
         )
       }
     }
-
 
     private[play] def enforceMaxLength[A](request: RequestHeader, maxLength: Int, accumulator: Accumulator[ByteString, Either[Result, A]]): Accumulator[ByteString, Either[Result, A]] = {
       val takeUpToFlow = Flow.fromGraph(new BodyParsers.TakeUpTo(maxLength.toLong))
