@@ -1,15 +1,5 @@
 package models
 
-case class FileInfo(
-  fileName: String,
-  requestUrl: play.api.mvc.Call,
-  tempUrl: play.api.mvc.Call,
-  encodeUrl: play.api.mvc.Call,
-  temfileExists: Boolean,
-  canEncode: Boolean,
-  isEncoding: Boolean
-)
-
 case class FilePath(
                      fileName: String,
                      requestUrl: String,
@@ -20,7 +10,7 @@ case class FilePath(
                      isEncoding: Boolean
                    )
 
-case class DirInfo(parentPath: String, deleteTempUrl: String, urls: List[FilePath])
+case class DirInfo(parentPath: String, urls: List[FilePath])
 
 case class RequestInfo(isSuccessed: Boolean, message: String)
 
@@ -39,5 +29,18 @@ object VideoInfo {
       "videoInfo" -> nonEmptyText,
       "returnPath" -> nonEmptyText
     )(VideoInfo.apply)(VideoInfo.unapply)
+  )
+}
+
+case class PathInfo(path: String)
+
+object PathInfo {
+  import play.api.data._
+  import play.api.data.Forms._
+
+  val pathInfoForm = Form(
+    mapping(
+      "path" -> text
+    )(PathInfo.apply)(PathInfo.unapply)
   )
 }

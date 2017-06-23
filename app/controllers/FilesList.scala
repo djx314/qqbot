@@ -4,7 +4,7 @@ import java.io.File
 import java.net.URI
 import javax.inject.{Inject, Singleton}
 
-import models.{DirInfo, FilePath}
+import models.{DirInfo, FilePath, PathInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.circe.Circe
 import play.api.libs.ws.WSClient
@@ -28,19 +28,8 @@ class FilesList @Inject() (
 
   val rootPath = hentaiConfig.rootPath
 
-  case class PathInfo(path: String)
-
-  import play.api.data._
-  import play.api.data.Forms._
-
-  val pathInfoForm = Form(
-    mapping(
-      "path" -> text
-    )(PathInfo.apply)(PathInfo.unapply)
-  )
-
   def at = Action.async { implicit request =>
-    pathInfoForm.bindFromRequest.fold(
+    PathInfo.pathInfoForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
       }, { case PathInfo(file1) =>
@@ -91,7 +80,7 @@ class FilesList @Inject() (
                   fileName = s.getName,
                   requestUrl = assist.controllers.routes.Assets.at(fileUrlString).toString,
                   tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString).toString,
-                  encodeUrl = assist.controllers.routes.Encoder.encodeFile(fileUrlString).toString,
+                  encodeUrl = s.toURI.toString.drop(parentUrl.size),
                   temfileExists = temExists,
                   canEncode = canConvert,
                   isEncoding = isEncoding
@@ -106,17 +95,16 @@ class FilesList @Inject() (
               assist.controllers.routes.Assets.root
             }
 
-            val currentPath = fileModel.toURI.toString
+            /*val currentPath = fileModel.toURI.toString
             val deleteTempUrl = if (currentPath.startsWith(parentFile.toURI.toString) && currentPath != parentUrl) {
               val result = currentPath.drop(parentUrl.size)
               assist.controllers.routes.Assets.deleteTempDir(result)
             } else {
               assist.controllers.routes.Assets.deleteRootTempDir
-            }
-
+            }*/
 
             Future.sequence(fileUrlsF).map { fileUrls =>
-              Ok(DirInfo(preiRealPath.toString, deleteTempUrl.toString, fileUrls).asJson)
+              Ok(DirInfo(preiRealPath.toString, fileUrls).asJson)
           }
         } else {
             Future successful BadRequest("参数错误，请求的路径不是目录")

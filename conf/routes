@@ -2,14 +2,13 @@
 GET        /assets/*file        assist.controllers.Assets.at(file)
 GET        /assets        assist.controllers.Assets.root
 GET        /staticAssets/*file        assist.controllers.Assets.staticAt(root = "/public", file)
-GET        /encode/*file        assist.controllers.Encoder.encodeFile(file)
+POST        /encode        assist.controllers.Encoder.encodeFile
 
 POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
-GET     /uploadSuccessFile   assist.controllers.Encoder.encodeSuccessPage(refer: String)
+#GET     /uploadSuccessFile   assist.controllers.Encoder.encodeSuccessPage(refer: String)
 
 GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)
 
-GET     /deleteTempDir/*file   assist.controllers.Assets.deleteTempDir(file)
-GET     /deleteRootTempDir   assist.controllers.Assets.deleteRootTempDir
+POST     /deleteTempDir   assist.controllers.Assets.deleteTempDir
 
 POST     /dirInfoRequest   assist.controllers.FilesList.at

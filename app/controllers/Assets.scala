@@ -2,14 +2,14 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import javax.inject.{ Inject, Named, Singleton }
+import javax.inject.{Inject, Named, Singleton}
 
-import models.FileInfo
+import models.PathInfo
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
 import play.api.mvc.InjectedController
 import play.utils.UriEncoding
-import utils.{ FileUtil, HentaiConfig }
+import utils.{FileUtil, HentaiConfig}
 
 import scala.concurrent.Future
 
@@ -87,35 +87,30 @@ class Assets @Inject() (
     }
   }
 
-  def deleteTempDir(file1: String) = {
-    val path = rootPath
-    val parentFile = new File(path)
-    val parentUrl = parentFile.toURI.toString
-    val currentUrl = new URI(parentUrl + file1)
-    val fileModel = new File(currentUrl)
+  def deleteTempDir = Action.async { implicit request =>
+    PathInfo.pathInfoForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future.successful(BadRequest("错误的参数"))
+      }, { case PathInfo(file1) =>
+        val path = rootPath
+        val parentFile = new File(path)
+        val parentUrl = parentFile.toURI.toString
+        val currentUrl = new URI(parentUrl + file1)
+        val fileModel = new File(currentUrl)
 
-    val currentPath = fileModel.toURI.toString
-    val redirectUrl = if (currentPath.startsWith(parentFile.toURI.toString) && currentPath != parentUrl) {
-      val result = currentPath.drop(parentUrl.size)
-      assist.controllers.routes.Assets.at(file1)
-    } else {
-      assist.controllers.routes.Assets.root
-    }
+        val currentPath = fileModel.toURI.toString
 
-    Action.async { implicit request =>
-      if (!fileModel.exists) {
-        Future successful Redirect(redirectUrl)
-      } else if (fileModel.isDirectory) {
-        val temFile = new File(fileModel, hentaiConfig.tempDirectoryName)
-        FileUtils.deleteDirectory(temFile)
-        Future successful Redirect(redirectUrl)
-      } else {
-        Future successful Redirect(redirectUrl)
+        if (!fileModel.exists) {
+          Future successful Ok("目录本身不存在")
+        } else if (fileModel.isDirectory) {
+          val temFile = new File(fileModel, hentaiConfig.tempDirectoryName)
+          FileUtils.deleteDirectory(temFile)
+          Future successful Ok("删除成功")
+        } else {
+          Future successful Ok("缓存目录不是文件夹，不作处理")
+        }
       }
-    }
-
+    )
   }
-
-  def deleteRootTempDir = deleteTempDir("")
 
 }
