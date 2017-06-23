@@ -113,4 +113,18 @@ class Assets @Inject() (
     )
   }
 
+  def withAss(file1: String) = Action.async { implicit request =>
+    val path = rootPath
+    val rootFile = new File(path)
+    val rootUrl = rootFile.toURI.toString
+    val currentUrl = new URI(rootUrl + file1)
+    val fileModel = new File(currentUrl)
+    val parentFile = fileModel.getParentFile
+
+    val fileUrl = fileModel.toURI.toString.drop(rootUrl.size)
+    val parentUrl = parentFile.toURI.toString.drop(rootUrl.size)
+
+    Future successful Ok(views.html.assEncode(fileUrl)(parentUrl))
+  }
+
 }

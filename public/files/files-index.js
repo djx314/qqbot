@@ -17,14 +17,18 @@ $(function() {
         };
 
         self.encodeFile = function(filePath) {
-            if (confirm("是否转码文件：" + filePath.fileName) === true) {
-                $.ajax({
-                    type: "POST",
-                    url: "/encode",
-                    data: { path: filePath.encodeUrl }
-                }).done(function(response) {
-                    alert(response);
-                });
+            if (confirm("是否转码文件：" + filePath.fileName + "？") === true) {
+                if (confirm("是否附带字幕文件？") === false) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/encode",
+                        data: { path: filePath.encodeUrl }
+                    }).done(function(response) {
+                        alert(response);
+                    });
+                } else {
+                    window.location.href = "/withAss?path=" + filePath.encodeUrl;
+                }
             }
         };
     };

@@ -95,19 +95,57 @@ class FilesList @Inject() (
               assist.controllers.routes.Assets.root
             }
 
-            /*val currentPath = fileModel.toURI.toString
-            val deleteTempUrl = if (currentPath.startsWith(parentFile.toURI.toString) && currentPath != parentUrl) {
-              val result = currentPath.drop(parentUrl.size)
-              assist.controllers.routes.Assets.deleteTempDir(result)
-            } else {
-              assist.controllers.routes.Assets.deleteRootTempDir
-            }*/
-
             Future.sequence(fileUrlsF).map { fileUrls =>
               Ok(DirInfo(preiRealPath.toString, fileUrls).asJson)
           }
         } else {
             Future successful BadRequest("参数错误，请求的路径不是目录")
+        }
+      }
+    )
+  }
+
+  case class FileSimpleInfo(
+                       fileName: String,
+                       encodeUrl: String,
+                       isDir: Boolean
+                     )
+
+  case class DirSimpleInfo(parentPath: String, urls: List[FileSimpleInfo])
+
+  def atAss = Action.async { implicit request =>
+    PathInfo.pathInfoForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future.successful(BadRequest("错误的参数"))
+      }, { case PathInfo(file1) =>
+        println("正确的参数")
+        val path = rootPath
+        val parentFile = new File(path)
+        val parentUrl = parentFile.toURI.toString
+        val currentUrl = new URI(parentUrl + file1)
+        val fileModel = new File(currentUrl)
+        if (!fileModel.exists) {
+          Future successful NotFound("找不到目录")
+        } else if (fileModel.isDirectory) {
+          val fileUrls = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
+            //val fileUrlString = s.toURI.toString.drop(parentUrl.size)
+            FileSimpleInfo(
+              fileName = s.getName,
+              encodeUrl = s.toURI.toString.drop(parentUrl.size),
+              isDir = s.isDirectory
+            )
+          }
+          val periPath = fileModel.getParentFile.toURI.toString
+          val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
+            val result = periPath.drop(parentUrl.size)
+            result
+          } else {
+            ""
+          }
+
+          Future successful Ok(DirSimpleInfo(preiRealPath, fileUrls).asJson)
+        } else {
+          Future successful BadRequest("参数错误，请求的路径不是目录")
         }
       }
     )

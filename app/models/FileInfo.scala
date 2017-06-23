@@ -44,3 +44,17 @@ object PathInfo {
     )(PathInfo.apply)(PathInfo.unapply)
   )
 }
+
+case class AssPathInfo(videoPath: String, assPath: String)
+
+object AssPathInfo {
+  import play.api.data._
+  import play.api.data.Forms._
+
+  val assPathInfoForm = Form(
+    mapping(
+      "videoPath" -> nonEmptyText,
+      "assPath" -> nonEmptyText
+    )(AssPathInfo.apply)(AssPathInfo.unapply)
+  )
+}

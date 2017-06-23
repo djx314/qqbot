@@ -12,3 +12,9 @@ GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)
 POST     /deleteTempDir   assist.controllers.Assets.deleteTempDir
 
 POST     /dirInfoRequest   assist.controllers.FilesList.at
+
+GET     /withAss   assist.controllers.Assets.withAss(path: String)
+
+POST     /filesWithAss   assist.controllers.FilesList.atAss
+
+POST     /encodeWithAss   assist.controllers.Encoder.encodeFileWithAss
