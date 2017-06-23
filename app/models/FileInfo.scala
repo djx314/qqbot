@@ -10,6 +10,18 @@ case class FileInfo(
   isEncoding: Boolean
 )
 
+case class FilePath(
+                     fileName: String,
+                     requestUrl: String,
+                     tempUrl: String,
+                     encodeUrl: String,
+                     temfileExists: Boolean,
+                     canEncode: Boolean,
+                     isEncoding: Boolean
+                   )
+
+case class DirInfo(parentPath: String, deleteTempUrl: String, urls: List[FilePath])
+
 case class RequestInfo(isSuccessed: Boolean, message: String)
 
 case class VideoInfo(encodeType: String, videoKey: String, videoLength: Int, videoInfo: String, returnPath: String)

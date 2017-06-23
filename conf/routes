@@ -11,3 +11,5 @@ GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)
 
 GET     /deleteTempDir/*file   assist.controllers.Assets.deleteTempDir(file)
 GET     /deleteRootTempDir   assist.controllers.Assets.deleteRootTempDir
+
+POST     /dirInfoRequest   assist.controllers.FilesList.at

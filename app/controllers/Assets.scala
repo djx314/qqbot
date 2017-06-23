@@ -38,77 +38,7 @@ class Assets @Inject() (
       }
     } else if (fileModel.isDirectory) {
       Action.async { implicit request =>
-        val fileUrlsF = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
-          val fileUrlString = s.toURI.toString.drop(parentUrl.size)
-
-          val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
-
-          val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName)
-          //val tempString = tempFile.toURI.toString.drop(parentUrl.size)
-
-          val tempDateFile = new File(tempFile.getParentFile, s.getName + "." + hentaiConfig.encodeInfoSuffix)
-          val isEncodingF = if (tempDateFile.exists()) {
-            try {
-              val dateStrings = FileUtils.readLines(tempDateFile, "utf-8")
-              val uuid = dateStrings.get(0)
-              val encodeDate = hentaiConfig.dateFormat.parse(dateStrings.get(1))
-              println(uuid)
-              wSClient.url(hentaiConfig.isEncodingrUrl).withQueryStringParameters("uuid" -> uuid).get().map { wsResult =>
-                println(wsResult)
-
-                val resultModel = if (wsResult.status == 200) {
-                  java.lang.Boolean.valueOf(wsResult.body): Boolean
-                } else {
-                  false
-                }
-                println(resultModel)
-                resultModel
-              }
-              /*if ((new Date().getTime - encodeDate.getTime) > (20 * 60 * 1000)) {
-                false
-              } else
-                true*/
-            } catch {
-              case e: Exception =>
-                e.printStackTrace
-                tempDateFile.deleteOnExit()
-                Future successful false
-            }
-          } else {
-            Future successful false
-          }
-
-          isEncodingF.map { isEncoding =>
-            FileInfo(
-              fileName = s.getName,
-              requestUrl = assist.controllers.routes.Assets.at(fileUrlString),
-              tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString),
-              encodeUrl = assist.controllers.routes.Encoder.encodeFile(fileUrlString),
-              temfileExists = temExists,
-              canEncode = canConvert,
-              isEncoding = isEncoding
-            )
-          }
-        }
-        val periPath = fileModel.getParentFile.toURI.toString
-        val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
-          val result = periPath.drop(parentUrl.size)
-          assist.controllers.routes.Assets.at(result)
-        } else {
-          assist.controllers.routes.Assets.root
-        }
-
-        val currentPath = fileModel.toURI.toString
-        val deleteTempUrl = if (currentPath.startsWith(parentFile.toURI.toString) && currentPath != parentUrl) {
-          val result = currentPath.drop(parentUrl.size)
-          assist.controllers.routes.Assets.deleteTempDir(result)
-        } else {
-          assist.controllers.routes.Assets.deleteRootTempDir
-        }
-
-        Future.sequence(fileUrlsF).map { fileUrls =>
-          Ok(views.html.index(preiRealPath)(deleteTempUrl)(fileUrls))
-        }
+        Future successful Ok(views.html.index(file1))
       }
     } else {
       assets.at(path, file1)
