@@ -38,7 +38,7 @@ $(function() {
                 $.ajax({
                     type: "POST",
                     url: "/encodeWithAss",
-                    data: { videoPath: filePath.encodeUrl, assPath: filePath.encodeUrl }
+                    data: { assPath: filePath.encodeUrl, videoPath : fileUrl }
                 }).done(function(response) {
                     alert(response);
                     if (initParentUrl === "") {

@@ -27,7 +27,7 @@ $(function() {
                         alert(response);
                     });
                 } else {
-                    window.location.href = "/withAss?path=" + filePath.encodeUrl;
+                    window.location.href = "/withAss?path=" + encodeURIComponent(filePath.encodeUrl);
                 }
             }
         };
