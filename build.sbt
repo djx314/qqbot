@@ -19,8 +19,8 @@ libraryDependencies += "commons-io" % "commons-io" % "2.5"
 
 scalaVersion := "2.11.11"
 fork in run := false
-enablePlugins(play.sbt.PlayScala, PlayNettyServer)
-disablePlugins(PlayAkkaHttpServer)
+enablePlugins(play.sbt.PlayScala, PlayAkkaHttpServer)
+disablePlugins(PlayNettyServer)
 
 dependsOn(playCirce)
 
