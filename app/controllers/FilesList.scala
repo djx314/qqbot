@@ -54,7 +54,7 @@ class FilesList @Inject() (
                 try {
                   val dateStrings = FileUtils.readLines(tempDateFile, "utf-8")
                   val uuid = dateStrings.get(0)
-                  val encodeDate = hentaiConfig.dateFormat.parse(dateStrings.get(1))
+                  //val encodeDate = hentaiConfig.dateFormat.parse(dateStrings.get(1))
                   wSClient.url(hentaiConfig.isEncodingrUrl).withQueryStringParameters("uuid" -> uuid).get().map { wsResult =>
                     println(wsResult)
 

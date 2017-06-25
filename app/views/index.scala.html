@@ -70,7 +70,7 @@
                         <!-- ko if: (eachFile.temfileExists === false) && (eachFile.canEncode === true) && (eachFile.isEncoding === false) -->
                         <form method="get" data-bind="attr: { action: eachFile.requestUrl }" style="float: left; overflow: hidden;">
                             <input type="hidden" name="date" data-bind="value: new Date().getTime()" />
-                            <input type="submit" value="直接观看" class="am-btn am-btn-secondary am-round am-btn-sm" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="直接观看" class="am-btn am-btn-warning am-round am-btn-sm" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         </form>
                             <button data-bind="click: function() { $parent.encodeFile(eachFile); }" class="am-btn am-btn-danger am-round am-btn-sm">立刻转码</button>&nbsp;&nbsp;&nbsp;
                         <!-- /ko -->
