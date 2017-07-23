@@ -18,7 +18,7 @@ libraryDependencies += ws
 libraryDependencies += "commons-io" % "commons-io" % "2.5"
 libraryDependencies += "play-circe" %% "play-circe" % "2.6-0.8.0"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.2"
 fork in run := false
 enablePlugins(play.sbt.PlayScala, PlayAkkaHttpServer)
 disablePlugins(PlayNettyServer)

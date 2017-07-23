@@ -2,6 +2,7 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
+import java.nio.file.Paths
 import java.util.Date
 import javax.inject.{Inject, Named, Singleton}
 
@@ -31,29 +32,30 @@ class Encoder @Inject() (
     PathInfo.pathInfoForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
-      }, { case PathInfo(file1) =>
-        val path = rootPath
-        val parentFile = new File(path)
-        val parentUrl = parentFile.toURI.toString
-        val currentUrl = new URI(parentUrl + file1)
-        val fileModel = new File(currentUrl)
-        if (!fileModel.exists) {
+      }, {
+        case PathInfo(file1) =>
+          val path = rootPath
+          val parentFile = new File(path)
+          val parentUrl = parentFile.toURI.toString
+          val currentUrl = new URI(parentUrl + file1)
+          val fileModel = new File(currentUrl)
+          if (!fileModel.exists) {
             Future successful NotFound("找不到目录")
-        } else if (fileModel.isDirectory) {
+          } else if (fileModel.isDirectory) {
             Future successful BadRequest("目录文件不能转码")
-        } else {
-          val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
-          tempDir.mkdirs()
-          encoderInfoSend.uploadVideo(file1).map { encodeUUID =>
-            val tempDateFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
-            val format = hentaiConfig.dateFormat
-            val dateString = format.format(new Date())
-            val writeString = s"$encodeUUID\r\n$dateString"
-            FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
+          } else {
+            val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
+            tempDir.mkdirs()
+            encoderInfoSend.uploadVideo(Paths.get(currentUrl)).map { encodeUUID =>
+              val tempDateFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
+              val format = hentaiConfig.dateFormat
+              val dateString = format.format(new Date())
+              val writeString = s"$encodeUUID\r\n$dateString"
+              FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
+            }
+            //val referUrl = request.headers.get("Referer").getOrElse(assist.controllers.routes.Assets.root().toString)
+            Future successful Ok("转码指令发送成功，喵")
           }
-          //val referUrl = request.headers.get("Referer").getOrElse(assist.controllers.routes.Assets.root().toString)
-          Future successful Ok("转码指令发送成功，喵")
-        }
       }
     )
   }
@@ -62,36 +64,37 @@ class Encoder @Inject() (
     AssPathInfo.assPathInfoForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
-      }, { case AssPathInfo(videoFilePath, assFilePath) =>
-        val path = rootPath
-        val parentFile = new File(path)
-        val parentUrl = parentFile.toURI.toString
-        val currentUrl = new URI(parentUrl + videoFilePath)
-        val videoFile = new File(currentUrl)
-        val assUrl = new URI(parentUrl + assFilePath)
-        val assFile = new File(assUrl)
+      }, {
+        case AssPathInfo(videoFilePath, assFilePath) =>
+          val path = rootPath
+          val parentFile = new File(path)
+          val parentUrl = parentFile.toURI.toString
+          val currentUrl = new URI(parentUrl + videoFilePath)
+          val videoFile = new File(currentUrl)
+          val assUrl = new URI(parentUrl + assFilePath)
+          val assFile = new File(assUrl)
 
-        if ((!videoFile.exists) || (!assFile.exists)) {
-          Future successful NotFound("找不到目录")
-        } else if (videoFile.isDirectory || assFile.isDirectory) {
-          Future successful BadRequest("目录文件不能转码")
-        } else {
-          val tempDir = new File(videoFile.getParentFile, hentaiConfig.tempDirectoryName)
-          tempDir.mkdirs()
-          encoderInfoSend.uploadVideoWithAss(videoFile, assFile).map { encodeUUID =>
-            val tempDateFile = new File(tempDir, videoFile.getName + "." + hentaiConfig.encodeInfoSuffix)
-            val format = hentaiConfig.dateFormat
-            val dateString = format.format(new Date())
-            val writeString = s"$encodeUUID\r\n$dateString"
-            FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
+          if ((!videoFile.exists) || (!assFile.exists)) {
+            Future successful NotFound("找不到目录")
+          } else if (videoFile.isDirectory || assFile.isDirectory) {
+            Future successful BadRequest("目录文件不能转码")
+          } else {
+            val tempDir = new File(videoFile.getParentFile, hentaiConfig.tempDirectoryName)
+            tempDir.mkdirs()
+            encoderInfoSend.uploadVideoWithAss(videoFile.toPath, assFile.toPath).map { encodeUUID =>
+              val tempDateFile = new File(tempDir, videoFile.getName + "." + hentaiConfig.encodeInfoSuffix)
+              val format = hentaiConfig.dateFormat
+              val dateString = format.format(new Date())
+              val writeString = s"$encodeUUID\r\n$dateString"
+              FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
+            }
+            Future successful Ok("带字幕转码指令发送成功，喵")
           }
-          Future successful Ok("带字幕转码指令发送成功，喵")
-        }
       }
     )
   }
 
-  def uploadEncodedFile = Action.async(parse.multipartFormData(10000000000L)) { implicit request =>
+  def uploadEncodedFile = Action.async(parse.multipartFormData(Long.MaxValue)) { implicit request =>
     def saveTargetVideo(videoInfo: VideoInfo) = {
       val fileStr = videoInfo.videoInfo
 

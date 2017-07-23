@@ -1,14 +1,14 @@
 package models
 
 case class FilePath(
-                     fileName: String,
-                     requestUrl: String,
-                     tempUrl: String,
-                     encodeUrl: String,
-                     temfileExists: Boolean,
-                     canEncode: Boolean,
-                     isEncoding: Boolean
-                   )
+  fileName: String,
+  requestUrl: String,
+  tempUrl: String,
+  encodeUrl: String,
+  temfileExists: Boolean,
+  canEncode: Boolean,
+  isEncoding: Boolean
+)
 
 case class DirInfo(parentPath: String, urls: List[FilePath])
 

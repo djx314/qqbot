@@ -2,14 +2,14 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
-import models.{DirInfo, FilePath, PathInfo}
+import models.{ DirInfo, FilePath, PathInfo }
 import org.apache.commons.io.FileUtils
 import play.api.libs.circe.Circe
 import play.api.libs.ws.WSClient
 import play.api.mvc.InjectedController
-import utils.{FileUtil, HentaiConfig}
+import utils.{ FileUtil, HentaiConfig }
 import io.circe.Json
 import io.circe.syntax._
 import io.circe.generic.auto._
@@ -32,16 +32,17 @@ class FilesList @Inject() (
     PathInfo.pathInfoForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
-      }, { case PathInfo(file1) =>
-        println("正确的参数")
-        val path = rootPath
-        val parentFile = new File(path)
-        val parentUrl = parentFile.toURI.toString
-        val currentUrl = new URI(parentUrl + file1)
-        val fileModel = new File(currentUrl)
-        if (!fileModel.exists) {
-          Future successful NotFound("找不到目录")
-        } else if (fileModel.isDirectory) {
+      }, {
+        case PathInfo(file1) =>
+          println("正确的参数")
+          val path = rootPath
+          val parentFile = new File(path)
+          val parentUrl = parentFile.toURI.toString
+          val currentUrl = new URI(parentUrl + file1)
+          val fileModel = new File(currentUrl)
+          if (!fileModel.exists) {
+            Future successful NotFound("找不到目录")
+          } else if (fileModel.isDirectory) {
             val fileUrlsF = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
               val fileUrlString = s.toURI.toString.drop(parentUrl.size)
 
@@ -97,19 +98,19 @@ class FilesList @Inject() (
 
             Future.sequence(fileUrlsF).map { fileUrls =>
               Ok(DirInfo(preiRealPath.toString, fileUrls).asJson)
-          }
-        } else {
+            }
+          } else {
             Future successful BadRequest("参数错误，请求的路径不是目录")
-        }
+          }
       }
     )
   }
 
   case class FileSimpleInfo(
-                       fileName: String,
-                       encodeUrl: String,
-                       isDir: Boolean
-                     )
+    fileName: String,
+    encodeUrl: String,
+    isDir: Boolean
+  )
 
   case class DirSimpleInfo(parentPath: String, urls: List[FileSimpleInfo])
 
@@ -117,36 +118,37 @@ class FilesList @Inject() (
     PathInfo.pathInfoForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
-      }, { case PathInfo(file1) =>
-        println("正确的参数")
-        val path = rootPath
-        val parentFile = new File(path)
-        val parentUrl = parentFile.toURI.toString
-        val currentUrl = new URI(parentUrl + file1)
-        val fileModel = new File(currentUrl)
-        if (!fileModel.exists) {
-          Future successful NotFound("找不到目录")
-        } else if (fileModel.isDirectory) {
-          val fileUrls = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
-            //val fileUrlString = s.toURI.toString.drop(parentUrl.size)
-            FileSimpleInfo(
-              fileName = s.getName,
-              encodeUrl = s.toURI.toString.drop(parentUrl.size),
-              isDir = s.isDirectory
-            )
-          }
-          val periPath = fileModel.getParentFile.toURI.toString
-          val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
-            val result = periPath.drop(parentUrl.size)
-            result
-          } else {
-            ""
-          }
+      }, {
+        case PathInfo(file1) =>
+          println("正确的参数")
+          val path = rootPath
+          val parentFile = new File(path)
+          val parentUrl = parentFile.toURI.toString
+          val currentUrl = new URI(parentUrl + file1)
+          val fileModel = new File(currentUrl)
+          if (!fileModel.exists) {
+            Future successful NotFound("找不到目录")
+          } else if (fileModel.isDirectory) {
+            val fileUrls = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
+              //val fileUrlString = s.toURI.toString.drop(parentUrl.size)
+              FileSimpleInfo(
+                fileName = s.getName,
+                encodeUrl = s.toURI.toString.drop(parentUrl.size),
+                isDir = s.isDirectory
+              )
+            }
+            val periPath = fileModel.getParentFile.toURI.toString
+            val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
+              val result = periPath.drop(parentUrl.size)
+              result
+            } else {
+              ""
+            }
 
-          Future successful Ok(DirSimpleInfo(preiRealPath, fileUrls).asJson)
-        } else {
-          Future successful BadRequest("参数错误，请求的路径不是目录")
-        }
+            Future successful Ok(DirSimpleInfo(preiRealPath, fileUrls).asJson)
+          } else {
+            Future successful BadRequest("参数错误，请求的路径不是目录")
+          }
       }
     )
   }
