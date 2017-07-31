@@ -1,12 +1,14 @@
 package utils
 
-import java.nio.file.{ Files, Path, Paths }
-import javax.inject.{ Inject, Singleton }
+import java.nio.charset.Charset
+import java.nio.file.{Files, Path, Paths}
+import java.text.DecimalFormat
+import javax.inject.{Inject, Singleton}
 
-import akka.stream.scaladsl.{ FileIO, Source }
+import akka.stream.scaladsl.{FileIO, Source}
 import org.slf4j.LoggerFactory
-import play.api.libs.ws.WSClient
-import play.api.mvc.MultipartFormData.{ DataPart, FilePart }
+import play.api.libs.ws.{WSClient, WSClientConfig}
+import play.api.mvc.MultipartFormData.{DataPart, FilePart}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -17,6 +19,9 @@ class EncoderInfoSend @Inject() (
     ws: WSClient,
     hentaiConfig: HentaiConfig
 )(implicit defaultExecutionContext: scala.concurrent.ExecutionContext) {
+
+  //val wsClientConfig: WSClientConfig = WSClientConfig(connectionTimeout = Duration.Inf)
+  //val ws1 = NingWSClient(NingWSClientConfig(wsClientConfig = wsClientConfig))
 
   val logger = LoggerFactory.getLogger(classOf[EncoderInfoSend])
   //implicit val _ec = defaultExecutionContext
@@ -38,8 +43,11 @@ class EncoderInfoSend @Inject() (
          |文件是否存在于文件系统:${if (fileExists) "是" else "否"}""".stripMargin
     )
 
+    val fileSize = Files.size(sourceFile)
+    val decimalFormat = new DecimalFormat(",###")
+    val fileFormattedSize = decimalFormat.format(fileSize)
+
     ws.url(hentaiConfig.encoderUrl)
-      .withRequestTimeout(1.hour)
       .post(
       Source(
         FilePart("video_0", sourceFile.getFileName.toString, Option("text/plain"), FileIO.fromPath(sourceFile)) ::
@@ -59,6 +67,7 @@ class EncoderInfoSend @Inject() (
             s"""上传文件成功
                |文件名:${sourceFile.getFileName}
                |文件路径:${sourceFile}
+               |文件大小:${fileFormattedSize}字节
              """.stripMargin
           )
           wsResult.body
@@ -66,7 +75,8 @@ class EncoderInfoSend @Inject() (
           val errorStr =
             s"""上传文件返回异常代码:${wsResult.status}
                |文件路径:${sourceFile}
-               |错误内容:\n${wsResult.body}""".stripMargin
+               |错误内容:\n${wsResult.body}
+               |文件大小:${fileFormattedSize}字节""".stripMargin
           //RequestInfo(false, errorStr)
           logger.error(errorStr)
           wsResult.body
@@ -76,7 +86,8 @@ class EncoderInfoSend @Inject() (
         case Failure(e) =>
           logger.error(s"""上传文件失败
                           |文件名:${sourceFile.getFileName}
-                          |文件路径:${sourceFile}""".stripMargin, e)
+                          |文件路径:${sourceFile}
+                          |文件大小:${fileFormattedSize}字节""".stripMargin, e)
       }
   }.flatMap(identity)
 
@@ -91,6 +102,14 @@ class EncoderInfoSend @Inject() (
 
     val key = s"里番-${videoPath.getFileName}"
 
+    val decimalFormat = new DecimalFormat(",###")
+    val videoFileSize = Files.size(videoPath)
+    val videoFileFormattedSize = decimalFormat.format(videoFileSize)
+    Charset.defaultCharset()
+
+    val assFileSize = Files.size(assPath)
+    val assFileFormattedSize = decimalFormat.format(assFileSize)
+
     logger.info(
       s"""开始发送里番文件
          |视频文件名:${videoPath.getFileName}
@@ -100,7 +119,6 @@ class EncoderInfoSend @Inject() (
     )
 
     ws.url(hentaiConfig.encoderUrl)
-      .withRequestTimeout(1.hour)
       .post(
       Source(
         FilePart("video_0", videoPath.getFileName.toString, Option("text/plain"), FileIO.fromPath(videoPath)) ::
@@ -123,7 +141,9 @@ class EncoderInfoSend @Inject() (
                |字幕文件名:${assPath.getFileName}
                |视频文件路径:${videoPath}
                |字幕文件路径:${assPath}
-             """.stripMargin
+               |视频文件大小:${videoFileFormattedSize}字节
+               |字幕文件大小:${assFileFormattedSize}字节
+              """.stripMargin
           )
           wsResult.body
         } else {
@@ -133,6 +153,8 @@ class EncoderInfoSend @Inject() (
                |字幕文件名:${assPath.getFileName}
                |视频文件路径:${videoPath}
                |字幕文件路径:${assPath}
+               |视频文件大小:${videoFileFormattedSize}字节
+               |字幕文件大小:${assFileFormattedSize}字节
                |错误内容:\n${wsResult.body}""".stripMargin
           //RequestInfo(false, errorStr)
           logger.error(errorStr)
@@ -142,10 +164,12 @@ class EncoderInfoSend @Inject() (
       }.andThen {
         case Failure(e) =>
           logger.error(s"""上传文件失败
-                        |文件名:${videoPath.getFileName}
-                        |${assPath.getFileName}
-                        |文件路径:${videoPath}
-                        |${assPath}""".stripMargin, e)
+                        |视频文件名:${videoPath.getFileName}
+                        |字幕文件名:${assPath.getFileName}
+                        |视频文件路径:${videoPath}
+                        |字幕文件路径:${assPath}
+                        |视频文件大小:${videoFileFormattedSize}字节
+                        |字幕文件大小:${assFileFormattedSize}字节""".stripMargin, e)
       }
   }.flatMap(identity)
 

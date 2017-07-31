@@ -22,6 +22,6 @@ scalaVersion := "2.12.2"
 fork in run := false
 enablePlugins(play.sbt.PlayScala, PlayAkkaHttpServer)
 disablePlugins(PlayNettyServer)
-//dependsOn(playCirce)
-/*lazy val playCirce = (project in file("./play-circe"))
-.settings(scalaVersion := "2.11.11")*/
+
+dependsOn(hentaiBase)
+lazy val hentaiBase = (project in file("./hentai-base"))
