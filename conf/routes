@@ -9,6 +9,9 @@ POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
 
 GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)
 
+GET     /player   assist.controllers.Assets.player
+GET     /player2   assist.controllers.Assets.player2
+
 POST     /deleteTempDir   assist.controllers.Assets.deleteTempDir
 
 POST     /dirInfoRequest   assist.controllers.FilesList.at

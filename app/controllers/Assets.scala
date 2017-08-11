@@ -128,4 +128,12 @@ class Assets @Inject() (
     Future successful Ok(views.html.assEncode(fileUrl)(parentUrl))
   }
 
+  def player = Action.async { implicit request =>
+    Future successful Ok(views.html.player())
+  }
+
+  def player2 = Action.async { implicit request =>
+    Future successful Ok(views.html.player2())
+  }
+
 }
