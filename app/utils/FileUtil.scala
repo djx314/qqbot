@@ -5,10 +5,10 @@ import javax.inject.{ Inject, Singleton }
 
 trait FileUtil {
 
-  def tempFileExists(file: File, tempDirectoryName: String): (File, Boolean) = {
+  def tempFileExists(file: File, tempDirectoryName: String, fileSuffix: String): (File, Boolean) = {
     val tempDirectory = new File(file.getParentFile, tempDirectoryName)
     tempDirectory.mkdirs()
-    val tempFile = new File(tempDirectory, file.getName + ".mp4")
+    val tempFile = new File(tempDirectory, file.getName + "." + fileSuffix)
     tempFile -> tempFile.exists()
   }
 

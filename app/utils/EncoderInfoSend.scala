@@ -55,7 +55,7 @@ class EncoderInfoSend @Inject() (
           DataPart("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size)) ::
           DataPart("returnPath", hentaiConfig.selfUrl) ::
           //DataPart("encodeType", "FormatFactoryEncoder") ::
-          DataPart("encodeType", "ffmpegEncoder") ::
+          DataPart("encodeType", "ogvEncoder") ::
           DataPart("videoLength", 1.toString) ::
           Nil
       )

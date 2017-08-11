@@ -48,7 +48,7 @@ class FilesList @Inject() (
 
               val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
 
-              val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName)
+              val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName, hentaiConfig.tempFileSuffix)
 
               val tempDateFile = new File(tempFile.getParentFile, s.getName + "." + hentaiConfig.encodeInfoSuffix)
               val isEncodingF = if (tempDateFile.exists()) {

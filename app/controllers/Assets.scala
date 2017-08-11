@@ -65,7 +65,7 @@ class Assets @Inject() (
       }
     } else {
       val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
-      val tempFile = new File(tempDir, fileModel.getName + ".mp4")
+      val tempFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.tempFileSuffix)
       if (!tempFile.exists) {
         Action.async { implicit request =>
           Future successful NotFound("缓存文件不存在")

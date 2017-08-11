@@ -14,6 +14,7 @@ import utils.{EncoderInfoSend, FileUtil, HentaiConfig}
 import scala.concurrent.Future
 import io.circe.syntax._
 import io.circe.generic.auto._
+import org.slf4j.LoggerFactory
 import play.api.libs.circe.Circe
 
 @Singleton
@@ -23,6 +24,8 @@ class Encoder @Inject() (
     fileUtil: FileUtil,
     encoderInfoSend: EncoderInfoSend
 ) extends InjectedController with Circe {
+
+  val logger = LoggerFactory.getLogger(getClass)
 
   implicit def ec = defaultExecutionContext
 
@@ -107,10 +110,10 @@ class Encoder @Inject() (
       val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
       tempDir.mkdirs()
 
-      val tempFile = new File(tempDir, fileModel.getName + ".mp4")
+      val tempFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.tempFileSuffix)
 
       request.body.file("video_0").map(s => s.ref.moveTo(tempFile, true))
-      println("target:" + tempFile.getCanonicalPath)
+      logger.info("服务器返回转码后的文件,目标路径为:\n" + tempFile.getCanonicalPath)
       Ok(RequestInfo(true, tempFile.getCanonicalPath).asJson)
     }
 
