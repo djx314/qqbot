@@ -38,7 +38,6 @@ class FilesList @Inject() (
         Future.successful(BadRequest("错误的参数"))
       }, {
         case PathInfo(file1) =>
-          println("正确的参数")
           val path = rootPath
           val parentFile = new File(path)
           val parentUrl = parentFile.toURI.toString
@@ -120,9 +119,6 @@ class FilesList @Inject() (
           val parentFile = new File(path)
           val parentUrl = parentFile.toURI.toString
           val fileModel = new File(parentFile, file1)
-          println(file)
-          println(file1)
-          //val fileModel = new File(currentUrl)
           if (!fileModel.exists) {
             Future successful NotFound("找不到目录")
           } else if (fileModel.isDirectory) {

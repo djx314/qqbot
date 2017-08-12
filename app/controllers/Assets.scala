@@ -15,6 +15,7 @@ import io.circe.syntax._
 import io.circe._
 import io.circe.generic.auto._
 import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
@@ -32,6 +33,7 @@ class Assets @Inject() (
 
   implicit def ec = defaultExecutionContext
 
+  val logger = LoggerFactory.getLogger(getClass)
 
   def at(file1: String) = {
     val path = rootPath
@@ -87,11 +89,10 @@ class Assets @Inject() (
         val parentFile = new File(path)
         val parentUrl = parentFile.getCanonicalPath
         val tempString = tempFile.getCanonicalPath.drop(parentUrl.size)
-
+        logger.info(s"访问转码后的文件:\n${tempFile.toPath}")
         //val tempFinalString = tempString.replaceAllLiterally(File.separator, "/")
-
-        println(tempString)
-        println(tempFile.getCanonicalPath)
+        //println(tempString)
+        //println(tempFile.getCanonicalPath)
         //println(tempFinalString)
         assets.at(path, UriEncoding.encodePathSegment(tempString, "utf-8"))
         //assets.at(path, tempFinalString)
