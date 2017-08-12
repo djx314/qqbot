@@ -17,6 +17,10 @@ libraryDependencies += guice
 libraryDependencies += ws
 libraryDependencies += "commons-io" % "commons-io" % "2.5"
 libraryDependencies += "play-circe" %% "play-circe" % "2.6-0.8.0"
+libraryDependencies += "io.circe" %% "circe-optics" % "0.8.0"
+libraryDependencies += "io.circe" %% "circe-generic-extras" % "0.8.0"
+libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "4.5.3"
+libraryDependencies += "org.apache.httpcomponents" % "httpmime" % "4.5.3"
 
 scalaVersion := "2.12.2"
 fork in run := false

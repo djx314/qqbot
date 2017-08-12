@@ -45,7 +45,7 @@ object PathInfo {
   )
 }
 
-case class AssPathInfo(videoPath: String, assPath: String)
+case class AssPathInfo(videoPath: String, assPath: String, assScale: BigDecimal)
 
 object AssPathInfo {
   import play.api.data._
@@ -54,7 +54,8 @@ object AssPathInfo {
   val assPathInfoForm = Form(
     mapping(
       "videoPath" -> nonEmptyText,
-      "assPath" -> nonEmptyText
+      "assPath" -> nonEmptyText,
+      "assScale" -> bigDecimal
     )(AssPathInfo.apply)(AssPathInfo.unapply)
   )
 }

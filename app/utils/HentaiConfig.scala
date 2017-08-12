@@ -1,8 +1,9 @@
 package utils
 
 import java.text.SimpleDateFormat
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
+import models.DateTimeFormat
 import play.api.Configuration
 
 trait HentaiConfig {
@@ -13,11 +14,11 @@ trait HentaiConfig {
   val encoderUrl: String
   val isEncodingrUrl: String
   val selfUrl: String
-  val tempFileSuffix: String
+  //val tempFileSuffix: String
   val encodeInfoSuffix: String = "EncodeInfo"
 
-  def dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-
+  //def dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+  implicit val dateFormat = DateTimeFormat("yyyy-MM-dd HH:mm:ss.SSS")
 }
 
 @Singleton
@@ -32,6 +33,6 @@ class HentaiConfigImpl @Inject() (
   override val encoderUrl = configuration.get[String]("djx314.hentai.url.encoder")
   override val isEncodingrUrl = configuration.get[String]("djx314.hentai.url.isEncoding")
   override val selfUrl = configuration.get[String]("djx314.hentai.url.self")
-  override val tempFileSuffix = configuration.get[String]("djx314.hentai.encode.tempFileSuffix")
+  //override val tempFileSuffix = configuration.get[String]("djx314.hentai.encode.tempFileSuffix")
 
 }

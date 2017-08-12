@@ -83,8 +83,12 @@
                             <input type="hidden" name="date" data-bind="value: new Date().getTime()" />
                             <input type="submit" value="立刻观看" class="am-btn am-btn-secondary am-round am-btn-sm" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         </form>
+                        <form method="get" data-bind="attr: { action: '/withAss' }" style="float: left; overflow: hidden;">
+                            <input type="hidden" name="path" data-bind="value: eachFile.encodeUrl" />
+                            <input type="submit" value="绑定字幕" class="am-btn am-btn-secondary am-round am-btn-sm" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </form>
                         <div style="float: left; overflow: hidden;">
-                            <button data-bind="click: function() { $parent.encodeFile(eachFile); }" class="am-btn am-btn-danger am-round am-btn-sm">强制重新转码</button>
+                            <button data-bind="click: function() { $parent.encodeFile(eachFile); }" class="am-btn am-btn-danger am-round am-btn-sm">重新转码</button>
                         </div>
                         <!-- /ko -->
                         <!-- ko if: (eachFile.temfileExists === true) && (eachFile.canEncode === true) && (eachFile.isEncoding === true) -->

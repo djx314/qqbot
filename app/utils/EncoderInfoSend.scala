@@ -6,6 +6,9 @@ import java.text.DecimalFormat
 import javax.inject.{Inject, Singleton}
 
 import akka.stream.scaladsl.{FileIO, Source}
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.{HttpMultipartMode, MultipartEntityBuilder}
+import org.apache.http.util.EntityUtils
 import org.slf4j.LoggerFactory
 import play.api.libs.ws.{WSClient, WSClientConfig}
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
@@ -47,10 +50,130 @@ class EncoderInfoSend @Inject() (
     val decimalFormat = new DecimalFormat(",###")
     val fileFormattedSize = decimalFormat.format(fileSize)
 
-    ws.url(hentaiConfig.encoderUrl)
+    import org.apache.http.client.methods.CloseableHttpResponse
+    import org.apache.http.client.methods.HttpPost
+    import org.apache.http.util.CharsetUtils
+
+    import org.apache.http.client.config.AuthSchemes
+    import org.apache.http.client.config.CookieSpecs
+    import org.apache.http.client.config.RequestConfig
+    import org.apache.http.client.config.RequestConfig.Builder
+    import org.apache.http.config.Registry
+    import org.apache.http.config.RegistryBuilder
+    import org.apache.http.conn.socket.ConnectionSocketFactory
+    import org.apache.http.conn.socket.PlainConnectionSocketFactory
+    import org.apache.http.impl.client.CloseableHttpClient
+    import org.apache.http.impl.client.HttpClientBuilder
+    import org.apache.http.impl.client.HttpClients
+    import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+    import org.apache.http.entity.mime.content.FileBody
+    import java.util
+    Future {
+      def createHttpClient(socketTimeout: Int): CloseableHttpClient = {
+        val builder = RequestConfig.custom
+        builder.setConnectTimeout(5000) // 设置连接超时时间，单位毫秒
+
+        builder.setConnectionRequestTimeout(1000) // 设置从connect Manager获取Connection 超时时间，单位毫秒。这个属性是新加的属性，因为目前版本是可以共享连接池的。
+
+        if (socketTimeout >= 0) builder.setSocketTimeout(socketTimeout) // 请求获取数据的超时时间，单位毫秒。 如果访问一个接口，多少时间内无法返回数据，就直接放弃此次调用。
+        val defaultRequestConfig = builder
+          .setCookieSpec(CookieSpecs.STANDARD_STRICT)
+          .setExpectContinueEnabled(true)
+          .setTargetPreferredAuthSchemes(util.Arrays.asList(AuthSchemes.NTLM, AuthSchemes.DIGEST))
+          .setProxyPreferredAuthSchemes(util.Arrays.asList(AuthSchemes.BASIC)).build
+        // 开启HTTPS支持
+        //enableSSL
+        // 创建可用Scheme
+        val socketFactoryRegistry = RegistryBuilder.create[ConnectionSocketFactory].register("http", PlainConnectionSocketFactory.INSTANCE).build
+        // 创建ConnectionManager，添加Connection配置信息
+        val connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry)
+        val httpClientBuilder = HttpClients.custom
+        //if (retryTimes > 0) setRetryHandler(httpClientBuilder, retryTimes)
+        val httpClient = httpClientBuilder.setConnectionManager(connectionManager).setDefaultRequestConfig(defaultRequestConfig).build
+        httpClient
+      }
+
+      var httpClient: CloseableHttpClient = null
+      try {
+        if (httpClient == null) {
+          httpClient = createHttpClient(3000 * 1000)
+        }
+        val contentType = ContentType.create("text/plain", "utf-8")
+        // 把文件转换成流对象FileBody
+        val fileBody = new FileBody(sourceFile.toFile, contentType, sourceFile.getFileName.toString)
+        // 以浏览器兼容模式运行，防止文件名乱码。
+        val reqEntity = MultipartEntityBuilder.create.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+          .addPart("video_0", fileBody)
+          .addTextBody("videoKey", key, contentType)
+          .addTextBody("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size), contentType)
+          .addTextBody("returnPath", hentaiConfig.selfUrl, contentType)
+          .addTextBody("encodeType", "ogvEncoder", contentType)
+          .addTextBody("videoLength", 1.toString, contentType)
+          .setCharset(CharsetUtils.get("UTF-8"))
+          .build
+        // uploadFile对应服务端类的同名属性<File类型>
+        // .addPart("uploadFileName", uploadFileName)
+        // uploadFileName对应服务端类的同名属性<String类型>
+        val httpPost = new HttpPost(hentaiConfig.encoderUrl)
+        httpPost.setEntity(reqEntity)
+        val httpResponse = httpClient.execute(httpPost)
+        val body = EntityUtils.toString(httpResponse.getEntity, "utf-8")
+        val statusCode = httpResponse.getStatusLine.getStatusCode
+        body -> statusCode
+        /*val statusCode = httpResponse.getStatusLine.getStatusCode
+        val content = getResult(httpResponse, charset)
+        return new Nothing(statusCode, content)*/
+      } finally {
+        if (httpClient != null) try
+          httpClient.close()
+        catch {
+          case e: Exception =>
+
+        }
+        if (httpClient != null) try
+          httpClient.close
+        catch {
+          case e: Exception =>
+        }
+      }
+    }.map {
+      case (body, statusCode) =>
+      val resultModel = if (statusCode == 200) {
+        logger.info(
+          s"""上传文件成功
+             |文件名:${sourceFile.getFileName}
+             |文件路径:${sourceFile}
+             |文件大小:${fileFormattedSize}字节
+             """.stripMargin
+        )
+        body
+      } else {
+        val errorStr =
+          s"""上传文件返回异常代码:${statusCode}
+             |文件路径:${sourceFile}
+             |错误内容:\n${body}
+             |文件大小:${fileFormattedSize}字节""".stripMargin
+        val errorStr1 =
+          s"""上传文件返回异常代码:${statusCode}
+             |文件路径:${sourceFile}
+             |文件大小:${fileFormattedSize}字节""".stripMargin
+        logger.error(errorStr1)
+        body
+      }
+      resultModel
+    }.andThen {
+      case Failure(e) =>
+        logger.error(s"""上传文件失败
+                        |文件名:${sourceFile.getFileName}
+                        |文件路径:${sourceFile}
+                        |文件大小:${fileFormattedSize}字节""".stripMargin, e)
+    }
+
+    /*ws.url(hentaiConfig.encoderUrl)
+        .addHttpHeaders()
       .post(
       Source(
-        FilePart("video_0", sourceFile.getFileName.toString, Option("text/plain"), FileIO.fromPath(sourceFile)) ::
+        FilePart("video_0", sourceFile.getFileName.toString, Option(ContentType.create("text/plain", "utf-8").toString), FileIO.fromPath(sourceFile)) ::
           DataPart("videoKey", key) ::
           DataPart("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size)) ::
           DataPart("returnPath", hentaiConfig.selfUrl) ::
@@ -62,7 +185,6 @@ class EncoderInfoSend @Inject() (
     )
       .map { wsResult =>
         val resultModel = if (wsResult.status == 200) {
-          //RequestInfo(true, wsResult.body)
           logger.info(
             s"""上传文件成功
                |文件名:${sourceFile.getFileName}
@@ -77,8 +199,11 @@ class EncoderInfoSend @Inject() (
                |文件路径:${sourceFile}
                |错误内容:\n${wsResult.body}
                |文件大小:${fileFormattedSize}字节""".stripMargin
-          //RequestInfo(false, errorStr)
-          logger.error(errorStr)
+          val errorStr1 =
+            s"""上传文件返回异常代码:${wsResult.status}
+               |文件路径:${sourceFile}
+               |文件大小:${fileFormattedSize}字节""".stripMargin
+          logger.error(errorStr1)
           wsResult.body
         }
         resultModel
@@ -88,9 +213,10 @@ class EncoderInfoSend @Inject() (
                           |文件名:${sourceFile.getFileName}
                           |文件路径:${sourceFile}
                           |文件大小:${fileFormattedSize}字节""".stripMargin, e)
-      }
+      }*/
   }.flatMap(identity)
 
+  @deprecated("已不再使用，目前使用 javascript 实现的前端字幕代替", "0.0.1")
   def uploadVideoWithAss(videoFile: Path, assFile: Path): Future[String] = Future {
     val path = hentaiConfig.rootPath
     val parentFile = Paths.get(path)

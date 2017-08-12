@@ -1,4 +1,4 @@
-@()
+@(videoUrl: String)(assUrl: Option[String])(assScale: BigDecimal)
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -35,45 +35,55 @@
 </head>
 <body>
     <video id="video" controls="controls">
-        <source src="/tempfile/%5B%E9%AD%94%E7%A9%97%E5%AD%97%E5%B9%95%E7%BB%84%5D2017%E5%B9%B47%E6%9C%88%E5%90%88%E9%9B%86(concise%20edition)/720P%2010bit%20AVC/%5BMaho.sub%5D%5B%E3%83%A1%E3%83%AA%E3%83%BC_%E3%82%B8%E3%82%A7%E3%83%BC%E3%83%B3%5D%E8%99%9C%E3%83%8E%E9%8E%96%EF%BD%9E%E5%87%A6%E5%A5%B3%E3%81%9F%E3%81%A1%E3%82%92%E7%A9%A2%E3%81%99%E6%B7%AB%E3%82%89%E3%81%AA%E6%A5%94%EF%BD%9E%20%E4%B8%8A%E5%B7%BB%E5%A5%AA%E3%82%8F%E3%82%8C%E3%81%9F%E6%97%A5%E5%B8%B8%5Bx264%20720P%20AAC%5D.mkv?date=1502489567574" type="video/ogg" />
     </video>
     <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/jquery/jquery-1.12.4.min.js")"></script>
     <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/AmazeUI-2.7.2/assets/js/amazeui.js")"></script>
     <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/knockout/knockout-3.4.2.js")"></script>
     <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/assjs/ass.js")"></script>
     <script type="text/javascript">
-        currentUrl = "@@currentPath";
-        $(function() {
-            $.get("/assets/%5B%E9%AD%94%E7%A9%97%E5%AD%97%E5%B9%95%E7%BB%84%5D2017%E5%B9%B47%E6%9C%88%E5%90%88%E9%9B%86(concise%20edition)/%E5%A4%96%E6%8C%82%E5%AD%97%E5%B9%95/%5B%E3%83%A1%E3%83%AA%E3%83%BC_%E3%82%B8%E3%82%A7%E3%83%BC%E3%83%B3%5D%E8%99%9C%E3%83%8E%E9%8E%96%EF%BD%9E%E5%87%A6%E5%A5%B3%E3%81%9F%E3%81%A1%E3%82%92%E7%A9%A2%E3%81%99%E6%B7%AB%E3%82%89%E3%81%AA%E6%A5%94%EF%BD%9E%20%E4%B8%8A%E5%B7%BB%E5%A5%AA%E3%82%8F%E3%82%8C%E3%81%9F%E6%97%A5%E5%B8%B8.ass?bust=" + new Date().getTime())
-            .done(function(response) {
-                var ass = new ASS();
-                console.log(ass.scale);
-                //ass.scale = 2;
-                console.log(ass.scale);
-                var video = $("#video");
-                var videoDom = video[0];
-                ass.init(response, videoDom);
+        var currentUrl = "@videoUrl";
+        var videoPath = "/tempfile/" + currentUrl + "?bust=" + new Date().getTime();
 
-                var resizeVideo = function() {
+        var hasAss = @{assUrl.isDefined};
+        var assPath = "@{assUrl.getOrElse("")}";
+        var assScale = @assScale;
+        $(function() {
+            var video = $("#video");
+            video.attr("src", videoPath);
+            var videoDom = video[0];
+
+            var resizeVideo = function() { };
+
+            $(window).resize(function () {
+                resizeVideo();
+            });
+            var event = video.bind("playing", function () {
+                $(window).trigger("resize");
+                event.unbind();
+            });
+
+            if (hasAss === true) {
+            $.get("/assets/" + assPath)
+                .done(function (response) {
+                    var ass = new ASS();
+                    ass.init(response, videoDom);
+                    resizeVideo = function() {
+                        video.width($("body").width());
+                        video.height($("body").height());
+                        ass.resize();
+                        ass.scale = ass.scale * assScale;
+                        console.log(ass.scale);
+                    };
+
+                    videoDom.play();
+                });
+            } else {
+                resizeVideo = function() {
                     video.width($("body").width());
                     video.height($("body").height());
-                    ass.resize();
-                    ass.scale = ass.scale * 2;
-                    console.log(ass.scale);
                 };
-
-                $(window).resize(function() {
-                    resizeVideo();
-                });
-                var event = video.bind("play", function() {
-                    setTimeout(function() {
-                        $(window).trigger("resize");
-                    }, 100);
-                    event.unbind();
-                });
-
                 videoDom.play();
-            });
+            }
         });
     </script>
 @*<script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("files/files-index.js")"></script>*@

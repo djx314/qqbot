@@ -2,15 +2,21 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import javax.inject.{ Inject, Named, Singleton }
+import java.nio.file.Files
+import javax.inject.{Inject, Named, Singleton}
 
-import models.PathInfo
+import models.{PathInfo, TempFileInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
 import play.api.mvc.InjectedController
 import play.utils.UriEncoding
-import utils.{ FileUtil, HentaiConfig }
+import utils.{FileUtil, HentaiConfig}
+import io.circe.syntax._
+import io.circe._
+import io.circe.generic.auto._
+import org.joda.time.DateTime
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
 @Singleton
@@ -22,9 +28,10 @@ class Assets @Inject() (
     fileUtil: FileUtil
 ) extends InjectedController {
 
+  import hentaiConfig._
+
   implicit def ec = defaultExecutionContext
 
-  val rootPath = hentaiConfig.rootPath
 
   def at(file1: String) = {
     val path = rootPath
@@ -65,7 +72,12 @@ class Assets @Inject() (
       }
     } else {
       val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
-      val tempFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.tempFileSuffix)
+      val tempInfoFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
+
+      val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile.toPath)
+
+      val tempFile = new File(tempDir, fileModel.getName + "." + tempInfo.encodeSuffix)
+
       if (!tempFile.exists) {
         Action.async { implicit request =>
           Future successful NotFound("缓存文件不存在")
@@ -128,12 +140,19 @@ class Assets @Inject() (
     Future successful Ok(views.html.assEncode(fileUrl)(parentUrl))
   }
 
-  def player = Action.async { implicit request =>
-    Future successful Ok(views.html.player())
-  }
+  def player(file1: String) = Action.async { implicit request =>
+    val path = rootPath
+    val parentFile = new File(path)
+    val parentUrl = parentFile.toURI.toString
+    val currentUrl = new URI(parentUrl + file1)
+    val fileModel = new File(currentUrl)
 
-  def player2 = Action.async { implicit request =>
-    Future successful Ok(views.html.player2())
+    val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
+    val tempInfoFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
+
+    val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile.toPath)
+
+    Future successful Ok(views.html.player(file1)(tempInfo.assFilePath)(tempInfo.assScale))
   }
 
 }

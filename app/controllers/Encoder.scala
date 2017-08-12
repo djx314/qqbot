@@ -1,8 +1,9 @@
 package assist.controllers
 
 import java.io.File
-import java.net.URI
-import java.nio.file.Paths
+import java.net.{URI, URLDecoder}
+import java.nio.charset.Charset
+import java.nio.file.{Files, Paths}
 import java.util.Date
 import javax.inject.{Inject, Named, Singleton}
 
@@ -14,8 +15,13 @@ import utils.{EncoderInfoSend, FileUtil, HentaiConfig}
 import scala.concurrent.Future
 import io.circe.syntax._
 import io.circe.generic.auto._
+import io.circe.optics.JsonPath._
+import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import play.api.libs.circe.Circe
+import play.utils.UriEncoding
+
+import scala.collection.JavaConverters._
 
 @Singleton
 class Encoder @Inject() (
@@ -24,6 +30,8 @@ class Encoder @Inject() (
     fileUtil: FileUtil,
     encoderInfoSend: EncoderInfoSend
 ) extends InjectedController with Circe {
+
+  import hentaiConfig._
 
   val logger = LoggerFactory.getLogger(getClass)
 
@@ -50,11 +58,12 @@ class Encoder @Inject() (
             val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
             tempDir.mkdirs()
             encoderInfoSend.uploadVideo(Paths.get(currentUrl)).map { encodeUUID =>
+              val tempInfo = TempFileInfo(
+                encodeUUID = Option(encodeUUID),
+                encodeTime = Option(DateTime.now)
+              )
               val tempDateFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
-              val format = hentaiConfig.dateFormat
-              val dateString = format.format(new Date())
-              val writeString = s"$encodeUUID\r\n$dateString"
-              FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
+              Files.write(tempDateFile.toPath, List(tempInfo.beautifulJson).asJava, Charset.forName("utf-8"))
             }
             //val referUrl = request.headers.get("Referer").getOrElse(assist.controllers.routes.Assets.root().toString)
             Future successful Ok("转码指令发送成功，喵")
@@ -63,21 +72,29 @@ class Encoder @Inject() (
     )
   }
 
-  def encodeFileWithAss = Action.async { implicit request =>
+  def saveAssInfo = Action.async { implicit request =>
     AssPathInfo.assPathInfoForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
       }, {
-        case AssPathInfo(videoFilePath, assFilePath) =>
+        case AssPathInfo(videoFilePath, assFilePath, assScale) =>
           val path = rootPath
           val parentFile = new File(path)
-          val parentUrl = parentFile.toURI.toString
-          val currentUrl = new URI(parentUrl + videoFilePath)
+          //val parentUrl = parentFile.toURI.toString
+          val currentUrl = new File(parentFile, URLDecoder.decode(videoFilePath, "utf-8")).toURI
           val videoFile = new File(currentUrl)
-          val assUrl = new URI(parentUrl + assFilePath)
-          val assFile = new File(assUrl)
+          //val assUrl = new URI(parentUrl + assFilePath)
+          //val assFile = new File(assUrl)
 
-          if ((!videoFile.exists) || (!assFile.exists)) {
+          val tempDir = new File(videoFile.getParentFile, hentaiConfig.tempDirectoryName)
+          val tempInfoFile = new File(tempDir, videoFile.getName + "." + hentaiConfig.encodeInfoSuffix)
+
+          val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile.toPath)
+          val newTempInfo = tempInfo.copy(assFilePath = Option(assFilePath), assScale = assScale)
+          Files.write(tempInfoFile.toPath, List(newTempInfo.beautifulJson).asJava, Charset.forName("utf-8"))
+
+          Future successful Ok("存储字幕信息成功，喵")
+          /*if ((!videoFile.exists) || (!assFile.exists)) {
             Future successful NotFound("找不到目录")
           } else if (videoFile.isDirectory || assFile.isDirectory) {
             Future successful BadRequest("目录文件不能转码")
@@ -87,12 +104,12 @@ class Encoder @Inject() (
             encoderInfoSend.uploadVideoWithAss(videoFile.toPath, assFile.toPath).map { encodeUUID =>
               val tempDateFile = new File(tempDir, videoFile.getName + "." + hentaiConfig.encodeInfoSuffix)
               val format = hentaiConfig.dateFormat
-              val dateString = format.format(new Date())
+              val dateString = "2333"//format.format(new Date())
               val writeString = s"$encodeUUID\r\n$dateString"
               FileUtils.writeStringToFile(tempDateFile, writeString, "utf-8")
             }
             Future successful Ok("带字幕转码指令发送成功，喵")
-          }
+          }*/
       }
     )
   }
@@ -110,7 +127,11 @@ class Encoder @Inject() (
       val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
       tempDir.mkdirs()
 
-      val tempFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.tempFileSuffix)
+      val tempInfoFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
+
+      val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile.toPath)
+
+      val tempFile = new File(tempDir, fileModel.getName + "." + tempInfo.encodeSuffix)
 
       request.body.file("video_0").map(s => s.ref.moveTo(tempFile, true))
       logger.info("服务器返回转码后的文件,目标路径为:\n" + tempFile.getCanonicalPath)

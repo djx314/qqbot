@@ -4,6 +4,7 @@ $(function() {
         var self = this;
         self.parentUrl = ko.observable(null);
         self.filesPath = ko.observableArray([]);
+        self.pathToSubmit = ko.observable(null);
 
         self.gotoParent = function() {
             $.ajax({
@@ -29,12 +30,16 @@ $(function() {
                     viewModel.filesPath(response.urls);
                 });
             } else {
-                self.encodeFile(filePath);
+                self.selectScale(filePath);
             }
         };
 
-        self.encodeFile = function(filePath) {
-            if (confirm("是否发送带字幕转码命令？") === true) {
+        self.selectScale = function(filePath) {
+            self.pathToSubmit(filePath.encodeUrl);
+            $('#ass-prompt').modal({
+                relatedTarget: this
+            });
+            /*if (confirm("是否发送带字幕转码命令？") === true) {
                 $.ajax({
                     type: "POST",
                     url: "/encodeWithAss",
@@ -47,7 +52,22 @@ $(function() {
                         window.location.href = "/assets/" + initParentUrl;
                     }
                 });
-            }
+            }*/
+        };
+
+        self.encodeFile = function(scale) {
+            $.ajax({
+                type: "POST",
+                url: "/encodeWithAss",
+                data: { assPath: self.pathToSubmit(), assScale: scale, videoPath: fileUrl }
+            }).done(function(response) {
+                alert(response);
+                if (initParentUrl === "") {
+                    window.location.href = "/assets";
+                } else {
+                    window.location.href = "/assets/" + initParentUrl;
+                }
+            });
         };
     };
 
