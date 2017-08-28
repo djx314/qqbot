@@ -60,7 +60,8 @@ class Encoder @Inject() (
             encoderInfoSend.uploadVideo(Paths.get(currentUrl)).map { encodeUUID =>
               val tempInfo = TempFileInfo(
                 encodeUUID = Option(encodeUUID),
-                encodeTime = Option(DateTime.now)
+                encodeTime = Option(DateTime.now),
+                encodeSuffix = "mp4"
               )
               val tempDateFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
               Files.write(tempDateFile.toPath, List(tempInfo.beautifulJson).asJava, Charset.forName("utf-8"))

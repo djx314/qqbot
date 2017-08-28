@@ -26,6 +26,8 @@ scalaVersion := "2.12.2"
 fork in run := false
 enablePlugins(play.sbt.PlayScala, PlayAkkaHttpServer)
 disablePlugins(PlayNettyServer)
+addCommandAlias("drun", "run 9527")
 
 dependsOn(hentaiBase)
 lazy val hentaiBase = (project in file("./hentai-base"))
+

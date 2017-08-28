@@ -107,7 +107,7 @@ class EncoderInfoSend @Inject() (
           .addTextBody("videoKey", key, contentType)
           .addTextBody("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size), contentType)
           .addTextBody("returnPath", hentaiConfig.selfUrl, contentType)
-          .addTextBody("encodeType", "ogvEncoder", contentType)
+          .addTextBody("encodeType", "ffmpegEncoder", contentType)
           .addTextBody("videoLength", 1.toString, contentType)
           .setCharset(CharsetUtils.get("UTF-8"))
           .build
