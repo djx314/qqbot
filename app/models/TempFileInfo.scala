@@ -51,7 +51,7 @@ object TempFileInfo {
 
   private implicit val configure: Configuration = Configuration.default.withDefaults
 
-  implicit def decoder(implicit formatter: DateTimeFormat) = {
+  implicit def decoder(implicit formatter: DateTimeFormat): Decoder[TempFileInfo] = {
     val format = JodaDateTimeFormat.forPattern(formatter.format)
     implicit val timeDecoder = Decoder.decodeString.emap { str =>
       try {
@@ -61,11 +61,12 @@ object TempFileInfo {
           Left(e.getLocalizedMessage)
       }
     }
-    implicitly[Decoder[TempFileInfo]]
+    exportDecoder[TempFileInfo].instance
   }
-  implicit def encoder(implicit formatter: DateTimeFormat) = {
+
+  implicit def encoder(implicit formatter: DateTimeFormat): Encoder[TempFileInfo] = {
     implicit val timeEncoder = Encoder.encodeString.contramap[DateTime](_.toString(formatter.format))
-    implicitly[Encoder[TempFileInfo]]
+    exportEncoder[TempFileInfo].instance
   }
 
   def fromUnknowString(str: String)(implicit decoder: Decoder[TempFileInfo]): TempFileInfo = {

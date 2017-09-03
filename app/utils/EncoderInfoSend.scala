@@ -6,15 +6,11 @@ import java.text.DecimalFormat
 import javax.inject.{Inject, Singleton}
 
 import akka.stream.scaladsl.{FileIO, Source}
-import org.apache.http.entity.ContentType
-import org.apache.http.entity.mime.{HttpMultipartMode, MultipartEntityBuilder}
-import org.apache.http.util.EntityUtils
 import org.slf4j.LoggerFactory
-import play.api.libs.ws.{WSClient, WSClientConfig}
+import play.api.libs.ws.WSClient
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 import scala.util.Failure
 
 @Singleton
@@ -50,7 +46,7 @@ class EncoderInfoSend @Inject() (
     val decimalFormat = new DecimalFormat(",###")
     val fileFormattedSize = decimalFormat.format(fileSize)
 
-    import org.apache.http.client.methods.CloseableHttpResponse
+    /*import org.apache.http.client.methods.CloseableHttpResponse
     import org.apache.http.client.methods.HttpPost
     import org.apache.http.util.CharsetUtils
 
@@ -167,18 +163,37 @@ class EncoderInfoSend @Inject() (
                         |文件名:${sourceFile.getFileName}
                         |文件路径:${sourceFile}
                         |文件大小:${fileFormattedSize}字节""".stripMargin, e)
-    }
+    }*/
 
-    /*ws.url(hentaiConfig.encoderUrl)
+    //val aa = new String(encode(Charset.forName("gbk"), sourceFile.getFileName.toString).toByteArray, "gbk")
+    //【钢琴_郎朗】郎朗_视奏《前前前世》
+    //\??????_?????????_?????????????????_RADWIMPS?
+    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "gbk")
+    //銆愰挗鐞確閮庢湕銆戦儙鏈梍瑙嗗銆婂墠鍓嶅墠涓栥?嬮挗鐞存洸_RADWIMPS銆愪綘
+    //ADWIMPS【你的名字??????更换无水印源???_演奏_音乐_bilibili_哔哩哔哩
+    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray)
+    //銆愰挗鐞確閮庢湕銆戦儙鏈梍瑙嗗銆婂墠鍓嶅墠涓栥?嬮挗鐞存洸_RADWIMPS銆愪綘
+    //ADWIMPS【你的名字??????更换无水印源???_演奏_音乐_bilibili_哔哩哔哩  println("11" * 100)
+    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "utf-8")
+    //【钢琴_郎朗】郎朗_视奏《前前前世》钢琴曲_RADWIMPS【你的名字】【更换无水印源】_演
+    //\??????_?????????_?????????????????_RADWIMPS?
+    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "iso8859-1")
+    //??é?????_é????????é?????_è§??????????????????????é????????_RADWIMP
+    //??é?????_é????????é?????_è§??????????????????????é????????_RADWIMP
+    //val aa = new String(encode(Charset.forName("iso8859-1"), sourceFile.getFileName.toString).toByteArray, "gbk")
+    //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
+    //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
+
+    ws.url(hentaiConfig.encoderUrl)
         .addHttpHeaders()
       .post(
       Source(
-        FilePart("video_0", sourceFile.getFileName.toString, Option(ContentType.create("text/plain", "utf-8").toString), FileIO.fromPath(sourceFile)) ::
+        FilePart("video_0", new String(sourceFile.getFileName.toString.getBytes(Charset.forName("utf-8")), Charset.defaultCharset), Option("""text/plain; charset=UTF-8"""), FileIO.fromPath(sourceFile)) ::
           DataPart("videoKey", key) ::
           DataPart("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size)) ::
           DataPart("returnPath", hentaiConfig.selfUrl) ::
           //DataPart("encodeType", "FormatFactoryEncoder") ::
-          DataPart("encodeType", "ogvEncoder") ::
+          DataPart("encodeType", "ffmpegEncoder") ::
           DataPart("videoLength", 1.toString) ::
           Nil
       )
@@ -213,7 +228,7 @@ class EncoderInfoSend @Inject() (
                           |文件名:${sourceFile.getFileName}
                           |文件路径:${sourceFile}
                           |文件大小:${fileFormattedSize}字节""".stripMargin, e)
-      }*/
+      }
   }.flatMap(identity)
 
   @deprecated("已不再使用，目前使用 javascript 实现的前端字幕代替", "0.0.1")

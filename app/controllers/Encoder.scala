@@ -147,7 +147,7 @@ class Encoder @Inject() (
         Future.successful(BadRequest("错误的参数"))
       },
       videoInfo => {
-        println("正确的参数")
+        //println("正确的参数")
         Future successful saveTargetVideo(videoInfo)
       }
     )
