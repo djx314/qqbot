@@ -7,9 +7,11 @@ import java.nio.file.{Files, Paths}
 import java.util.Date
 import javax.inject.{Inject, Named, Singleton}
 
+import archer.controllers.CommonController
+import controllers.CustomAssets
 import models._
 import org.apache.commons.io.FileUtils
-import play.api.mvc.InjectedController
+import play.api.mvc.{ControllerComponents, InjectedController}
 import utils.{EncoderInfoSend, FileUtil, HentaiConfig}
 
 import scala.concurrent.Future
@@ -25,11 +27,12 @@ import scala.collection.JavaConverters._
 
 @Singleton
 class Encoder @Inject() (
-    @Named("hentai") assets: controllers.AssetsBuilder,
+    @Named("hentai") assets: CustomAssets,
     hentaiConfig: HentaiConfig,
     fileUtil: FileUtil,
-    encoderInfoSend: EncoderInfoSend
-) extends InjectedController with Circe {
+    encoderInfoSend: EncoderInfoSend,
+    controllerComponents: ControllerComponents
+) extends CommonController(controllerComponents) with Circe {
 
   import hentaiConfig._
 

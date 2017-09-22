@@ -4,11 +4,12 @@ import java.io.File
 import java.net.{URI, URLDecoder}
 import javax.inject.{Inject, Singleton}
 
+import archer.controllers.CommonController
 import models.{DirInfo, FilePath, PathInfo, TempFileInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.circe.Circe
 import play.api.libs.ws.WSClient
-import play.api.mvc.InjectedController
+import play.api.mvc.{ControllerComponents, InjectedController}
 import utils.{FileUtil, HentaiConfig}
 import io.circe.Json
 import io.circe.syntax._
@@ -23,8 +24,9 @@ class FilesList @Inject() (
     commonAssets: controllers.Assets,
     hentaiConfig: HentaiConfig,
     wSClient: WSClient,
-    fileUtil: FileUtil
-) extends InjectedController with Circe {
+    fileUtil: FileUtil,
+    controllerComponents: ControllerComponents
+) extends CommonController(controllerComponents) with Circe {
 
   val logger = LoggerFactory.getLogger(getClass)
 

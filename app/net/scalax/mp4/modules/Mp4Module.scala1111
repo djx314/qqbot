@@ -17,11 +17,6 @@ class Mp4Module extends AbstractModule {
 
     bind(classOf[FileUtil])
       .to(classOf[FileUtilImpl])
-    /*bind(classOf[VideoPathConfig])
-      .to(classOf[VideoConfig])
-
-    bind(classOf[FilesReply])
-      .to(classOf[FilesReplyImpl])*/
   }
 
 }

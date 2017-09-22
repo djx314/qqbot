@@ -5,10 +5,12 @@ import java.net.URI
 import java.nio.file.Files
 import javax.inject.{Inject, Named, Singleton}
 
+import archer.controllers.CommonController
+import controllers.CustomAssets
 import models.{PathInfo, TempFileInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
-import play.api.mvc.InjectedController
+import play.api.mvc.{ControllerComponents, InjectedController}
 import play.utils.UriEncoding
 import utils.{FileUtil, HentaiConfig}
 import io.circe.syntax._
@@ -22,12 +24,13 @@ import scala.concurrent.Future
 
 @Singleton
 class Assets @Inject() (
-    @Named("hentai") assets: controllers.AssetsBuilder,
+    @Named("hentai") assets: CustomAssets,
     commonAssets: controllers.Assets,
     hentaiConfig: HentaiConfig,
     wSClient: WSClient,
-    fileUtil: FileUtil
-) extends InjectedController {
+    fileUtil: FileUtil,
+    controllerComponents: ControllerComponents
+) extends CommonController(controllerComponents) {
 
   import hentaiConfig._
 
