@@ -15,6 +15,7 @@ version := "0.0.1"
 
 //libraryDependencies += guice
 libraryDependencies += ws
+libraryDependencies += "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.1.2"
 libraryDependencies += "commons-io" % "commons-io" % "2.5"
 libraryDependencies += "play-circe" %% "play-circe" % "2.6-0.8.0"
 libraryDependencies += "io.circe" %% "circe-optics" % "0.8.0"

@@ -12,7 +12,7 @@ case class DateTimeFormat(format: String)
 case class TempFileInfo(
                        encodeUUID: Option[String] = None,
                        encodeTime: Option[DateTime] = None,
-                       encodeSuffix: String = "ogv",
+                       encodeSuffix: String = "mp4",
                        assFilePath: Option[String] = None,
                        assScale: BigDecimal = 1
                        ) {

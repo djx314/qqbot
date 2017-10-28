@@ -6,9 +6,12 @@ import java.text.DecimalFormat
 import javax.inject.{Inject, Singleton}
 
 import akka.stream.scaladsl.{FileIO, Source}
+import akka.util.ByteString
 import org.slf4j.LoggerFactory
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{BodyWritable, SourceBody, WSClient}
+import play.api.mvc.MultipartFormData
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
+import play.core.formatters.Multipart
 
 import scala.concurrent.Future
 import scala.util.Failure
@@ -184,11 +187,12 @@ class EncoderInfoSend @Inject() (
     //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
     //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
 
+    //(ws.url(hentaiConfig.encoderUrl): StandaloneWSRequest)
     ws.url(hentaiConfig.encoderUrl)
         .addHttpHeaders()
       .post(
       Source(
-        FilePart("video_0", new String(sourceFile.getFileName.toString.getBytes(Charset.forName("utf-8")), Charset.defaultCharset), Option("""text/plain; charset=UTF-8"""), FileIO.fromPath(sourceFile)) ::
+        FilePart("video_0", new String(sourceFile.getFileName.toString.getBytes("utf-8"), "gbk"), Option("""multipart/form-data; charset=UTF-8"""), FileIO.fromPath(sourceFile)) ::
           DataPart("videoKey", key) ::
           DataPart("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size)) ::
           DataPart("returnPath", hentaiConfig.selfUrl) ::
