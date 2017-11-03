@@ -5,6 +5,7 @@ import java.nio.file.{Files, Path}
 import org.joda.time.DateTime
 import io.circe._
 import io.circe.syntax._
+
 import scala.collection.JavaConverters._
 
 case class DateTimeFormat(format: String)
@@ -20,7 +21,7 @@ case class TempFileInfo(
 
   private def indented(indent: String): Printer = Printer(
     preserveOrder = true,
-    dropNullKeys = false,
+    dropNullValues = false,
     indent = indent,
     lbraceRight = "\r\n",
     rbraceLeft = "\r\n",
@@ -45,15 +46,18 @@ object TempFileInfo {
 
   def empty = TempFileInfo()
 
-  import io.circe.generic.extras.auto._
+  import io.circe.generic.auto._
+  //import io.circe.generic.extras.auto._
   import io.circe.generic.extras.Configuration
   import org.joda.time.format.{DateTimeFormat => JodaDateTimeFormat}
 
   private implicit val configure: Configuration = Configuration.default.withDefaults
 
   implicit def decoder(implicit formatter: DateTimeFormat): Decoder[TempFileInfo] = {
+    //implicit val bigDecimalDecoder = Decoder[BigDecimal]
+    println("11" * 100)
     val format = JodaDateTimeFormat.forPattern(formatter.format)
-    implicit val timeDecoder = Decoder.decodeString.emap { str =>
+    implicit val timeDecoder: Decoder[DateTime] = Decoder.decodeString.emap { str =>
       try {
         Right(DateTime.parse(str, format))
       } catch {
@@ -65,7 +69,8 @@ object TempFileInfo {
   }
 
   implicit def encoder(implicit formatter: DateTimeFormat): Encoder[TempFileInfo] = {
-    implicit val timeEncoder = Encoder.encodeString.contramap[DateTime](_.toString(formatter.format))
+    //implicit val bigDecimalDecoder = Encoder[BigDecimal]
+    implicit val timeEncoder: Encoder[DateTime] = Encoder.encodeString.contramap[DateTime](_.toString(formatter.format))
     exportEncoder[TempFileInfo].instance
   }
 
