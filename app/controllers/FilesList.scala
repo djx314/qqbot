@@ -21,7 +21,6 @@ import scala.util.Try
 
 @Singleton
 class FilesList @Inject() (
-    commonAssets: controllers.Assets,
     hentaiConfig: HentaiConfig,
     wSClient: WSClient,
     fileUtil: FileUtil,

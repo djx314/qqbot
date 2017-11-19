@@ -2,7 +2,6 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import java.nio.file.Files
 import javax.inject.{Inject, Named, Singleton}
 
 import archer.controllers.CommonController
@@ -10,13 +9,12 @@ import controllers.CustomAssets
 import models.{PathInfo, TempFileInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
-import play.api.mvc.{ControllerComponents, InjectedController}
+import play.api.mvc.ControllerComponents
 import play.utils.UriEncoding
-import utils.{FileUtil, HentaiConfig}
+import utils.{AssetsUtil, FileUtil, HentaiConfig}
 import io.circe.syntax._
 import io.circe._
 import io.circe.generic.auto._
-import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
@@ -24,7 +22,7 @@ import scala.concurrent.Future
 
 @Singleton
 class Assets @Inject() (
-    @Named("hentai") assets: CustomAssets,
+    assets: CustomAssets,
     commonAssets: controllers.Assets,
     hentaiConfig: HentaiConfig,
     wSClient: WSClient,
@@ -38,22 +36,18 @@ class Assets @Inject() (
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  def at(file1: String) = {
+  def at(file1: String) = Action.async { implicit request =>
     val path = rootPath
     val parentFile = new File(path)
     val parentUrl = parentFile.toURI.toString
     val currentUrl = new URI(parentUrl + file1)
     val fileModel = new File(currentUrl)
     if (!fileModel.exists) {
-      Action.async { implicit request =>
         Future successful NotFound("找不到目录")
-      }
     } else if (fileModel.isDirectory) {
-      Action.async { implicit request =>
-        Future successful Ok(views.html.index(file1))
-      }
+      Future successful Ok(views.html.index(file1))
     } else {
-      assets.at(path, file1)
+      AssetsUtil.at(assets, path, file1)
     }
   }
 
@@ -61,20 +55,16 @@ class Assets @Inject() (
 
   def staticAt(root: String, path: String) = commonAssets.at(root, path)
 
-  def tempFile(file1: String) = {
+  def tempFile(file1: String) = Action.async { implicit request =>
     val path = rootPath
     val parentFile = new File(path)
     val parentUrl = parentFile.toURI.toString
     val currentUrl = new URI(parentUrl + file1)
     val fileModel = new File(currentUrl)
     if (!fileModel.exists) {
-      Action.async { implicit request =>
-        Future successful NotFound("找不到文件")
-      }
+      Future successful NotFound("找不到文件")
     } else if (fileModel.isDirectory) {
-      Action.async { implicit request =>
-        Future successful NotFound("找不到文件")
-      }
+      Future successful NotFound("找不到文件")
     } else {
       val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
       val tempInfoFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
@@ -84,9 +74,7 @@ class Assets @Inject() (
       val tempFile = new File(tempDir, fileModel.getName + "." + tempInfo.encodeSuffix)
 
       if (!tempFile.exists) {
-        Action.async { implicit request =>
-          Future successful NotFound("缓存文件不存在")
-        }
+        Future successful NotFound("缓存文件不存在")
       } else {
         val path = rootPath
         val parentFile = new File(path)
@@ -97,7 +85,7 @@ class Assets @Inject() (
         //println(tempString)
         //println(tempFile.getCanonicalPath)
         //println(tempFinalString)
-        assets.at(path, UriEncoding.encodePathSegment(tempString, "utf-8"))
+        AssetsUtil.at(assets, path, UriEncoding.encodePathSegment(tempString, "utf-8"))
         //assets.at(path, tempFinalString)
       }
     }

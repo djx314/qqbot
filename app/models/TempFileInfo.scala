@@ -46,16 +46,13 @@ object TempFileInfo {
 
   def empty = TempFileInfo()
 
-  import io.circe.generic.auto._
-  //import io.circe.generic.extras.auto._
+  import io.circe.generic.extras.auto._
   import io.circe.generic.extras.Configuration
   import org.joda.time.format.{DateTimeFormat => JodaDateTimeFormat}
 
   private implicit val configure: Configuration = Configuration.default.withDefaults
 
   implicit def decoder(implicit formatter: DateTimeFormat): Decoder[TempFileInfo] = {
-    //implicit val bigDecimalDecoder = Decoder[BigDecimal]
-    println("11" * 100)
     val format = JodaDateTimeFormat.forPattern(formatter.format)
     implicit val timeDecoder: Decoder[DateTime] = Decoder.decodeString.emap { str =>
       try {
@@ -69,7 +66,6 @@ object TempFileInfo {
   }
 
   implicit def encoder(implicit formatter: DateTimeFormat): Encoder[TempFileInfo] = {
-    //implicit val bigDecimalDecoder = Encoder[BigDecimal]
     implicit val timeEncoder: Encoder[DateTime] = Encoder.encodeString.contramap[DateTime](_.toString(formatter.format))
     exportEncoder[TempFileInfo].instance
   }
