@@ -75,7 +75,8 @@ class FilesList @Inject() (
                 FilePath(
                   fileName = s.getName,
                   requestUrl = assist.controllers.routes.Assets.at(fileUrlString).toString,
-                  tempUrl = assist.controllers.routes.Assets.player(fileUrlString).toString,
+                  tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString).toString,
+                    //assist.controllers.routes.Assets.player(fileUrlString).toString,
                   encodeUrl = s.toURI.toString.drop(parentUrl.size),
                   temfileExists = temExists,
                   canEncode = canConvert,
