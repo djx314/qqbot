@@ -26,7 +26,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Amaze UI"/>
 
-    <link rel="stylesheet" href="@assist.controllers.routes.Assets.staticAt("frameworks/AmazeUI-2.7.2/assets/css/amazeui.css")" media="all">
+    <link rel="stylesheet" href="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/AmazeUI-2.7.2/assets/css/amazeui.css")" media="all">
     <style type="text/css">
     body {}
         html, body { width: 100%; height: 100%; }
@@ -36,10 +36,10 @@
 <body>
     <video id="video" controls="controls">
     </video>
-    <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/jquery/jquery-1.12.4.min.js")"></script>
-    <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/AmazeUI-2.7.2/assets/js/amazeui.js")"></script>
-    <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/knockout/knockout-3.4.2.js")"></script>
-    <script type="text/javascript" src="@assist.controllers.routes.Assets.staticAt("frameworks/assjs/ass.js")"></script>
+    <script type="text/javascript" src="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/jquery/jquery-1.12.4.min.js")"></script>
+    <script type="text/javascript" src="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/AmazeUI-2.7.2/assets/js/amazeui.js")"></script>
+    <script type="text/javascript" src="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/knockout/knockout-3.4.2.js")"></script>
+    <script type="text/javascript" src="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/assjs/ass.js")"></script>
     <script type="text/javascript">
         var currentUrl = "@videoUrl";
         var videoPath = "/tempfile/" + currentUrl + "?bust=" + new Date().getTime();

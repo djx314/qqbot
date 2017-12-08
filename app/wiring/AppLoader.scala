@@ -44,6 +44,7 @@ class AppComponents(context: Context)
     wire[_root_.controllers.CustomAssets]
   }
   private lazy val archerAssets = wire[assist.controllers.Assets]
+  private lazy val CommonAssetsController = wire[archer.controllers.CommonAssetsController]
   private lazy val HentaiConfig: HentaiConfig = wire[HentaiConfigImpl]
   private lazy val FileUtil: FileUtil = wire[FileUtilImpl]
   private lazy val Encoder: Encoder = wire[Encoder]

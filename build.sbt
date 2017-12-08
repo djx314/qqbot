@@ -32,6 +32,11 @@ libraryDependencies ++= Seq(
   "com.softwaremill.macwire" %% "proxy" % "2.3.0"
 )
 
+libraryDependencies ++= Seq(
+  "org.webjars.bower" % "requirejs" % "2.3.3",
+  "org.webjars.bower" % "requirejs-text" % "2.0.15"
+)
+
 scalaVersion := "2.12.4"
 fork in run := false
 enablePlugins(play.sbt.PlayScala, PlayAkkaHttpServer)

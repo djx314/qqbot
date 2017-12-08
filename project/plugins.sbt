@@ -1,6 +1,6 @@
 resolvers ++= Seq(
-  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-  "mavenRepoJX" at "http://repo1.maven.org/maven2/"
+  //"Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+  //"mavenRepoJX" at "http://repo1.maven.org/maven2/"
   //"oschina" at "http://maven.oschina.net/content/groups/public",
 )
 

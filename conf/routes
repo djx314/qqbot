@@ -1,7 +1,7 @@
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file        assist.controllers.Assets.at(file)
 GET        /assets        assist.controllers.Assets.root
-GET        /staticAssets/*file        assist.controllers.Assets.staticAt(root = "/public", file)
+GET        /staticAssets/*file        archer.controllers.CommonAssetsController.staticAt(root = "/public", file)
 POST        /encode        assist.controllers.Encoder.encodeFile
 
 POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
