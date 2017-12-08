@@ -1,30 +1,33 @@
-<div>
-    <ul class="am-list">
+<div class="files-list-content">
+    <ul class="files-list-ul">
         <!--列表标题-->
         <div class="am-list-news-hd am-cf">
             <!--带更多链接-->
-            <a class="" data-bind="attr: { href: vm.parentUrl }">
+            <a class="" data-bind="attr: { href: '#assets/' + vm.parentUrl() }">
                 <h2>上一级目录</h2>
             </a>
         </div>
         <!-- ko foreach: { data: vm.filesPath, as: 'eachFile' } -->
         <li class="files-list-item">
             <!-- ko if: eachFile.canEncode === true -->
-            <a href="#" class="am-list-item-hd" data-bind="text: eachFile.fileName"></a>
+            <span class="am-list-item-hd" data-bind="text: eachFile.fileName"></span>
             <!-- /ko -->
-            <!-- ko if: eachFile.canEncode === false -->
-            <a class="am-list-item-hd" data-bind="attr: { href: eachFile.requestUrl }, text: eachFile.fileName"></a>
+            <!-- ko if: (eachFile.canEncode === false) && (eachFile.isDirectory === false) -->
+            <a class="am-list-item-hd" data-bind="attr: { href: eachFile.assetsUrl }, text: eachFile.fileName"></a>
+            <!-- /ko -->
+            <!-- ko if: eachFile.isDirectory === true -->
+            <a class="am-list-item-hd" data-bind="attr: { href: '#assets/' + eachFile.requestUrl }, text: eachFile.fileName"></a>
             <!-- /ko -->
             <div class="am-list-item-text" style="overflow: hidden; display: block;">
                 <!-- ko if: (eachFile.temfileExists === false) && (eachFile.canEncode === true) && (eachFile.isEncoding === false) -->
-                <form method="get" data-bind="attr: { action: eachFile.requestUrl }" style="float: left; overflow: hidden;">
+                <form method="get" data-bind="attr: { action: eachFile.assetsUrl }" style="float: left; overflow: hidden;">
                     <input type="hidden" name="date" data-bind="value: new Date().getTime()" />
                     <input type="submit" value="直接观看" class="layui-btn layui-btn-warm layui-btn-sm" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </form>
                 <button data-bind="click: function() { $parent.encodeFile(eachFile); }" class="layui-btn layui-btn-danger layui-btn-sm">立刻转码</button>&nbsp;&nbsp;&nbsp;
                 <!-- /ko -->
                 <!-- ko if: (eachFile.temfileExists === false) && (eachFile.canEncode === true) && (eachFile.isEncoding === true) -->
-                <button type="button" class="layui-btn layui-btn-warning layui-btn-sm">转码中，请稍候</button>&nbsp;&nbsp;&nbsp;
+                <button type="button" class="layui-btn layui-btn-warm layui-btn-sm">转码中，请稍候</button>&nbsp;&nbsp;&nbsp;
                 <button data-bind="click: function() { $parent.encodeFile(eachFile); }" class="layui-btn layui-btn-danger layui-btn-sm">重新发送转码指令</button>&nbsp;&nbsp;&nbsp;
                 <!-- /ko -->
                 <!-- ko if: (eachFile.temfileExists === true) && (eachFile.canEncode === true) && (eachFile.isEncoding === false) -->
@@ -42,7 +45,7 @@
                 <!-- /ko -->
                 <!-- ko if: (eachFile.temfileExists === true) && (eachFile.canEncode === true) && (eachFile.isEncoding === true) -->
                 <div style="float: left; overflow: hidden;">
-                    <button type="button" class="layui-btn layui-btn-warning layui-btn-sm">转码中，请稍候</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button type="button" class="layui-btn layui-btn-warm layui-btn-sm">转码中，请稍候</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </div>
                 <form method="get" data-bind="attr: { action: eachFile.tempUrl }" style="float: left; overflow: hidden;">
                     <input type="hidden" name="date" data-bind="value: new Date().getTime()" />

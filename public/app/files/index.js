@@ -36,6 +36,7 @@ define(function(require) {
     };
 
     var viewModel = new ViewModel();
+    var currentPath = null;
 
     return {
         vm: viewModel,
@@ -44,7 +45,7 @@ define(function(require) {
             $.ajax({
                 type: "POST",
                 url: "/deleteTempDir",
-                data: { path: currentUrl }
+                data: { path: currentPath }
             }).done(function(response) {
                 location.reload(true);
             });
@@ -64,12 +65,15 @@ define(function(require) {
                 }*/
             }
         },
+        /*enterUrl: function(filePath) {
+
+        },*/
         activate: function(path) {
+            currentPath = path;
             var def = $.Deferred();
             $.ajax({
                 type: "POST",
                 url: "/dirInfoRequest",
-                dataType: "json",
                 data: { path: path }
             }).done(function(response) {
                 viewModel.parentUrl(response.parentPath);

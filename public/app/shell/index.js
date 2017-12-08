@@ -5,8 +5,7 @@ define(function (require) {
         router: router,
         activate: function() {
             router.map([
-                { route: "", moduleId: "lifan/files/index", title: "里番首页" },
-                { route: "assets(*details)", moduleId: "lifan/files/index", title: "里番首页", nav: 3, hash: "#assets" }
+                { route: "assets(/*details)", moduleId: "lifan/files/index", title: "里番首页", nav: 3, hash: "#assets" }
             ]).buildNavigationModel();
             return router.activate();
         }

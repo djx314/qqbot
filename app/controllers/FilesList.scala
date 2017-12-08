@@ -2,6 +2,9 @@ package assist.controllers
 
 import java.io.File
 import java.net.{URI, URLDecoder}
+import java.nio.file.{Files, Paths}
+import java.util.function.IntFunction
+import java.util.stream.Collectors
 import javax.inject.{Inject, Singleton}
 
 import archer.controllers.CommonController
@@ -17,6 +20,7 @@ import io.circe.generic.auto._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 @Singleton
@@ -40,22 +44,24 @@ class FilesList @Inject() (
       }, {
         case PathInfo(file1) =>
           val path = rootPath
-          val parentFile = new File(path)
-          val parentUrl = parentFile.toURI.toString
-          val currentUrl = new URI(parentUrl + file1)
-          val fileModel = new File(currentUrl)
-          if (!fileModel.exists) {
+          val parentFile = Paths.get(path)
+          val parentUrl = parentFile.toRealPath().toUri.toString
+          //val currentUrl = new URI(parentUrl + file1)
+          val currentPath = parentFile.resolve(file1).toRealPath()
+          //val fileModel = new File(currentUrl)
+          if (! Files.exists(currentPath)) {
             Future successful NotFound("找不到目录")
-          } else if (fileModel.isDirectory) {
-            val fileUrlsF = fileModel.listFiles().toList.filter(_.getName != hentaiConfig.tempDirectoryName).map { s =>
-              val fileUrlString = s.toURI.toString.drop(parentUrl.size)
+          } else if (Files.isDirectory(currentPath)) {
+            val paths = Files.list(currentPath).collect(Collectors.toList()).asScala.toList
+            val fileUrlsF =  paths.filter(_.getFileName.toString != hentaiConfig.tempDirectoryName).map { s =>
+              val fileUrlString = s.toRealPath().toUri.toString.drop(parentUrl.size)
 
-              val canConvert = fileUtil.canEncode(s, hentaiConfig.encodeSuffix)
+              val canConvert = fileUtil.canEncode(s.getFileName.toUri.toString, hentaiConfig.encodeSuffix)
 
               val (tempFile, temExists) = fileUtil.tempFileExists(s, hentaiConfig.tempDirectoryName, hentaiConfig.encodeInfoSuffix)
 
-              val tempDateFile = new File(tempFile.getParentFile, s.getName + "." + hentaiConfig.encodeInfoSuffix)
-              val isEncodingF = TempFileInfo.fromUnknowPath(tempDateFile.toPath).encodeUUID.map { uuid =>
+              val tempDateFile = tempFile.getParent.resolve(s.getFileName.toString + "." + hentaiConfig.encodeInfoSuffix)
+              val isEncodingF = TempFileInfo.fromUnknowPath(tempDateFile).encodeUUID.map { uuid =>
                 wSClient.url(hentaiConfig.isEncodingrUrl).withQueryStringParameters("uuid" -> uuid).get().map { wsResult =>
                   if (wsResult.status == 200) {
                     Try {
@@ -73,23 +79,27 @@ class FilesList @Inject() (
 
               isEncodingF.map { isEncoding =>
                 FilePath(
-                  fileName = s.getName,
-                  requestUrl = assist.controllers.routes.Assets.at(fileUrlString).toString,
-                  tempUrl = assist.controllers.routes.Assets.tempFile(fileUrlString).toString,
+                  fileName = s.getFileName.toString,
+                  isDirectory = Files.isDirectory(s),
+                  requestUrl = s.toRealPath().toUri.toString.drop(parentUrl.size),
+                  assetsUrl = assist.controllers.routes.Assets.at(s.toRealPath().toUri.toString.drop(parentUrl.size)).toString,
+                  tempUrl = assist.controllers.routes.Assets.tempFile(s.toRealPath().toUri.toString.drop(parentUrl.size)).toString,
                     //assist.controllers.routes.Assets.player(fileUrlString).toString,
-                  encodeUrl = s.toURI.toString.drop(parentUrl.size),
+                  //encodeUrl = s.toURI.toString.drop(parentUrl.size),
+                  encodeUrl = s.toRealPath().toUri.toString.drop(parentUrl.size),
                   temfileExists = temExists,
                   canEncode = canConvert,
                   isEncoding = isEncoding
                 )
               }
             }
-            val periPath = fileModel.getParentFile.toURI.toString
-            val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
-              val result = periPath.drop(parentUrl.size)
-              assist.controllers.routes.Assets.at(result)
+            val periPath = currentPath.getParent.toRealPath().toUri.toString
+            val preiRealPath = if (periPath.startsWith(parentUrl)) {
+              //val result = periPath.drop(parentUrl.size)
+              periPath.drop(parentUrl.size)
             } else {
-              assist.controllers.routes.Assets.root
+              //assist.controllers.routes.Assets.root
+              ""
             }
 
             Future.sequence(fileUrlsF).map { fileUrls =>

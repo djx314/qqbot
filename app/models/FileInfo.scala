@@ -2,7 +2,9 @@ package models
 
 case class FilePath(
   fileName: String,
+  isDirectory: Boolean,
   requestUrl: String,
+  assetsUrl: String,
   tempUrl: String,
   encodeUrl: String,
   temfileExists: Boolean,

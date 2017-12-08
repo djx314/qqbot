@@ -20,3 +20,5 @@ GET     /withAss   assist.controllers.Assets.withAss(path: String)
 POST     /filesWithAss   assist.controllers.FilesList.atAss
 
 POST     /encodeWithAss   assist.controllers.Encoder.saveAssInfo
+
+GET     /   assist.controllers.Assets.files

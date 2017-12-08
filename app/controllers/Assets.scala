@@ -38,7 +38,7 @@ class Assets @Inject() (
 
   def at(file1: String) = Action.async { implicit request =>
     val path = rootPath
-    val parentFile = new File(path)
+    /*val parentFile = new File(path)
     val parentUrl = parentFile.toURI.toString
     val currentUrl = new URI(parentUrl + file1)
     val fileModel = new File(currentUrl)
@@ -48,7 +48,12 @@ class Assets @Inject() (
       Future successful Ok(views.html.index(file1))
     } else {
       AssetsUtil.at(assets, path, file1)
-    }
+    }*/
+    AssetsUtil.at(assets, path, file1)
+  }
+
+  def files = Action.async { implicit request =>
+    Future.successful(Ok(views.html.index()))
   }
 
   def root = at("")
