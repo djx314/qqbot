@@ -4,9 +4,9 @@ case class FilePath(
   fileName: String,
   isDirectory: Boolean,
   requestUrl: String,
-  assetsUrl: String,
-  tempUrl: String,
-  encodeUrl: String,
+  //assetsUrl: String,
+  //tempUrl: String,
+  //encodeUrl: String,
   temfileExists: Boolean,
   canEncode: Boolean,
   isEncoding: Boolean

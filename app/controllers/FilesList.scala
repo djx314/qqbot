@@ -45,7 +45,7 @@ class FilesList @Inject() (
         case PathInfo(file1) =>
           val path = rootPath
           val parentFile = Paths.get(path)
-          val parentUrl = parentFile.toRealPath().toUri.toString
+          val parentUrl = parentFile.toRealPath().toUri.toASCIIString
           //val currentUrl = new URI(parentUrl + file1)
           val currentPath = parentFile.resolve(file1).toRealPath()
           //val fileModel = new File(currentUrl)
@@ -54,7 +54,7 @@ class FilesList @Inject() (
           } else if (Files.isDirectory(currentPath)) {
             val paths = Files.list(currentPath).collect(Collectors.toList()).asScala.toList
             val fileUrlsF =  paths.filter(_.getFileName.toString != hentaiConfig.tempDirectoryName).map { s =>
-              val fileUrlString = s.toRealPath().toUri.toString.drop(parentUrl.size)
+              //val fileUrlString = s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)
 
               val canConvert = fileUtil.canEncode(s.getFileName.toUri.toString, hentaiConfig.encodeSuffix)
 
@@ -77,16 +77,24 @@ class FilesList @Inject() (
                 }
               }.getOrElse(Future.successful(false))
 
+              //val assetsUrl = s"http://192.168.1.112/${s.toRealPath().toUri.toString.drop(parentUrl.size)}"
+              /*val tempUrl = if (temExists)
+                s"http://192.168.1.112/${tempDateFile.toRealPath().toUri.toString.drop(parentUrl.size)}"
+              else
+                assetsUrl*/
+
               isEncodingF.map { isEncoding =>
                 FilePath(
                   fileName = s.getFileName.toString,
                   isDirectory = Files.isDirectory(s),
-                  requestUrl = s.toRealPath().toUri.toString.drop(parentUrl.size),
-                  assetsUrl = assist.controllers.routes.Assets.at(s.toRealPath().toUri.toString.drop(parentUrl.size)).toString,
-                  tempUrl = assist.controllers.routes.Assets.tempFile(s.toRealPath().toUri.toString.drop(parentUrl.size)).toString,
+                  requestUrl = s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
+                //assetsUrl = assist.controllers.routes.Assets.at(s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)).toString,
+                  //assetsUrl = "assets/" + s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
+                  //tempUrl = assist.controllers.routes.Assets.tempFile(s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)).toString,
+                    //tempUrl = "tempfile/" + s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
                     //assist.controllers.routes.Assets.player(fileUrlString).toString,
                   //encodeUrl = s.toURI.toString.drop(parentUrl.size),
-                  encodeUrl = s.toRealPath().toUri.toString.drop(parentUrl.size),
+                  //encodeUrl = s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
                   temfileExists = temExists,
                   canEncode = canConvert,
                   isEncoding = isEncoding
