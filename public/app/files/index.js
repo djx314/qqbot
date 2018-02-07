@@ -56,7 +56,7 @@ define(function(require) {
                 $.ajax({
                     type: "POST",
                     url: "/encode",
-                    data: { path: filePath.encodeUrl }
+                    data: { path: filePath.requestUrl }
                 }).done(function(response) {
                     alert(response);
                 });
