@@ -1,10 +1,10 @@
 package utils
 
 import java.io.File
-import java.nio.file.{Files, Path}
-import javax.inject.{Inject, Singleton}
+import java.nio.file.{ Files, Path }
+import javax.inject.{ Inject, Singleton }
 
-import models.{DateTimeFormat, TempFileInfo}
+import models.{ DateTimeFormat, TempFileInfo }
 
 trait FileUtil {
 

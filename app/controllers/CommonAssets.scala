@@ -1,14 +1,13 @@
 package archer.controllers
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import play.api.mvc.ControllerComponents
 
 @Singleton
 class CommonAssetsController @Inject() (
-    commonAssets: controllers.Assets,
-    controllerComponents: ControllerComponents
-) extends CommonController(controllerComponents) {
+  commonAssets: controllers.Assets,
+  controllerComponents: ControllerComponents) extends CommonController(controllerComponents) {
 
   implicit def ec = defaultExecutionContext
 

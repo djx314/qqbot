@@ -9,8 +9,7 @@ case class FilePath(
   //encodeUrl: String,
   temfileExists: Boolean,
   canEncode: Boolean,
-  isEncoding: Boolean
-)
+  isEncoding: Boolean)
 
 case class DirInfo(parentPath: String, urls: List[FilePath])
 
@@ -29,9 +28,7 @@ object VideoInfo {
       "videoKey" -> nonEmptyText,
       "videoLength" -> number,
       "videoInfo" -> nonEmptyText,
-      "returnPath" -> nonEmptyText
-    )(VideoInfo.apply)(VideoInfo.unapply)
-  )
+      "returnPath" -> nonEmptyText)(VideoInfo.apply)(VideoInfo.unapply))
 }
 
 case class PathInfo(path: String)
@@ -42,9 +39,7 @@ object PathInfo {
 
   val pathInfoForm = Form(
     mapping(
-      "path" -> text
-    )(PathInfo.apply)(PathInfo.unapply)
-  )
+      "path" -> text)(PathInfo.apply)(PathInfo.unapply))
 }
 
 case class AssPathInfo(videoPath: String, assPath: String, assScale: BigDecimal)
@@ -57,7 +52,5 @@ object AssPathInfo {
     mapping(
       "videoPath" -> nonEmptyText,
       "assPath" -> nonEmptyText,
-      "assScale" -> bigDecimal
-    )(AssPathInfo.apply)(AssPathInfo.unapply)
-  )
+      "assScale" -> bigDecimal)(AssPathInfo.apply)(AssPathInfo.unapply))
 }

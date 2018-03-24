@@ -1,6 +1,6 @@
 package models
 
-import java.nio.file.{Files, Path}
+import java.nio.file.{ Files, Path }
 
 import org.joda.time.DateTime
 import io.circe._
@@ -11,12 +11,11 @@ import scala.collection.JavaConverters._
 case class DateTimeFormat(format: String)
 
 case class TempFileInfo(
-                       encodeUUID: Option[String] = None,
-                       encodeTime: Option[DateTime] = None,
-                       encodeSuffix: String = "mp4",
-                       assFilePath: Option[String] = None,
-                       assScale: BigDecimal = 1
-                       ) {
+  encodeUUID: Option[String] = None,
+  encodeTime: Option[DateTime] = None,
+  encodeSuffix: String = "mp4",
+  assFilePath: Option[String] = None,
+  assScale: BigDecimal = 1) {
   self =>
 
   private def indented(indent: String): Printer = Printer(
@@ -31,8 +30,7 @@ case class TempFileInfo(
     arrayCommaRight = "\r\n",
     objectCommaRight = "\r\n",
     colonLeft = " ",
-    colonRight = " "
-  )
+    colonRight = " ")
 
   val printer: Printer = indented("  ")
 
@@ -48,7 +46,7 @@ object TempFileInfo {
 
   import io.circe.generic.extras.auto._
   import io.circe.generic.extras.Configuration
-  import org.joda.time.format.{DateTimeFormat => JodaDateTimeFormat}
+  import org.joda.time.format.{ DateTimeFormat => JodaDateTimeFormat }
 
   private implicit val configure: Configuration = Configuration.default.withDefaults
 
@@ -73,7 +71,7 @@ object TempFileInfo {
   def fromUnknowString(str: String)(implicit decoder: Decoder[TempFileInfo]): TempFileInfo = {
     val json = io.circe.parser.parse(str) match {
       case Left(e) => Json.obj()
-      case Right(j) => if (j.isObject && ! j.isNull) {
+      case Right(j) => if (j.isObject && !j.isNull) {
         j
       } else {
         Json.obj()
@@ -90,7 +88,7 @@ object TempFileInfo {
       val str = Files.readAllLines(path).asScala.mkString
       val json = io.circe.parser.parse(str) match {
         case Left(e) => Json.obj()
-        case Right(j) => if (j.isObject && ! j.isNull) {
+        case Right(j) => if (j.isObject && !j.isNull) {
           j
         } else {
           Json.obj()

@@ -1,19 +1,19 @@
 package assist.controllers
 
 import java.io.File
-import java.net.{URI, URLDecoder}
-import java.nio.file.{Files, Paths}
+import java.net.{ URI, URLDecoder }
+import java.nio.file.{ Files, Paths }
 import java.util.function.IntFunction
 import java.util.stream.Collectors
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import archer.controllers.CommonController
-import models.{DirInfo, FilePath, PathInfo, TempFileInfo}
+import models.{ DirInfo, FilePath, PathInfo, TempFileInfo }
 import org.apache.commons.io.FileUtils
 import play.api.libs.circe.Circe
 import play.api.libs.ws.WSClient
-import play.api.mvc.{ControllerComponents, InjectedController}
-import utils.{FileUtil, HentaiConfig}
+import play.api.mvc.{ ControllerComponents, InjectedController }
+import utils.{ FileUtil, HentaiConfig }
 import io.circe.Json
 import io.circe.syntax._
 import io.circe.generic.auto._
@@ -25,11 +25,10 @@ import scala.util.Try
 
 @Singleton
 class FilesList @Inject() (
-    hentaiConfig: HentaiConfig,
-    wSClient: WSClient,
-    fileUtil: FileUtil,
-    controllerComponents: ControllerComponents
-) extends CommonController(controllerComponents) with Circe {
+  hentaiConfig: HentaiConfig,
+  wSClient: WSClient,
+  fileUtil: FileUtil,
+  controllerComponents: ControllerComponents) extends CommonController(controllerComponents) with Circe {
 
   val logger = LoggerFactory.getLogger(getClass)
 
@@ -49,11 +48,11 @@ class FilesList @Inject() (
           //val currentUrl = new URI(parentUrl + file1)
           val currentPath = parentFile.resolve(file1).toRealPath()
           //val fileModel = new File(currentUrl)
-          if (! Files.exists(currentPath)) {
+          if (!Files.exists(currentPath)) {
             Future successful NotFound("找不到目录")
           } else if (Files.isDirectory(currentPath)) {
             val paths = Files.list(currentPath).collect(Collectors.toList()).asScala.toList
-            val fileUrlsF =  paths.filter(_.getFileName.toString != hentaiConfig.tempDirectoryName).map { s =>
+            val fileUrlsF = paths.filter(_.getFileName.toString != hentaiConfig.tempDirectoryName).map { s =>
               //val fileUrlString = s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)
 
               val canConvert = fileUtil.canEncode(s.getFileName.toUri.toString, hentaiConfig.encodeSuffix)
@@ -88,17 +87,16 @@ class FilesList @Inject() (
                   fileName = s.getFileName.toString,
                   isDirectory = Files.isDirectory(s),
                   requestUrl = s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
-                //assetsUrl = assist.controllers.routes.Assets.at(s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)).toString,
+                  //assetsUrl = assist.controllers.routes.Assets.at(s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)).toString,
                   //assetsUrl = "assets/" + s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
                   //tempUrl = assist.controllers.routes.Assets.tempFile(s.toRealPath().toUri.toASCIIString.drop(parentUrl.size)).toString,
-                    //tempUrl = "tempfile/" + s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
-                    //assist.controllers.routes.Assets.player(fileUrlString).toString,
+                  //tempUrl = "tempfile/" + s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
+                  //assist.controllers.routes.Assets.player(fileUrlString).toString,
                   //encodeUrl = s.toURI.toString.drop(parentUrl.size),
                   //encodeUrl = s.toRealPath().toUri.toASCIIString.drop(parentUrl.size),
                   temfileExists = temExists,
                   canEncode = canConvert,
-                  isEncoding = isEncoding
-                )
+                  isEncoding = isEncoding)
               }
             }
             val periPath = currentPath.getParent.toRealPath().toUri.toString
@@ -116,15 +114,13 @@ class FilesList @Inject() (
           } else {
             Future successful BadRequest("参数错误，请求的路径不是目录")
           }
-      }
-    )
+      })
   }
 
   case class FileSimpleInfo(
     fileName: String,
     encodeUrl: String,
-    isDir: Boolean
-  )
+    isDir: Boolean)
 
   case class DirSimpleInfo(parentPath: String, urls: List[FileSimpleInfo])
 
@@ -147,8 +143,7 @@ class FilesList @Inject() (
               FileSimpleInfo(
                 fileName = s.getName,
                 encodeUrl = s.toURI.toString.drop(parentUrl.size),
-                isDir = s.isDirectory
-              )
+                isDir = s.isDirectory)
             }
             val periPath = fileModel.getParentFile.toURI.toString
             val preiRealPath = if (periPath.startsWith(parentFile.toURI.toString) && periPath != parentUrl) {
@@ -162,8 +157,7 @@ class FilesList @Inject() (
           } else {
             Future successful BadRequest("参数错误，请求的路径不是目录")
           }
-      }
-    )
+      })
   }
 
 }

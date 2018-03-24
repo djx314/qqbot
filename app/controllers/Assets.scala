@@ -2,17 +2,17 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import java.nio.file.{Files, Paths}
-import javax.inject.{Inject, Named, Singleton}
+import java.nio.file.{ Files, Paths }
+import javax.inject.{ Inject, Named, Singleton }
 
 import archer.controllers.CommonController
 import controllers.CustomAssets
-import models.{PathInfo, TempFileInfo}
+import models.{ PathInfo, TempFileInfo }
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
 import play.api.mvc.ControllerComponents
 import play.utils.UriEncoding
-import utils.{AssetsUtil, FileUtil, HentaiConfig}
+import utils.{ AssetsUtil, FileUtil, HentaiConfig }
 import io.circe.syntax._
 import io.circe._
 import io.circe.generic.auto._
@@ -23,13 +23,12 @@ import scala.concurrent.Future
 
 @Singleton
 class Assets @Inject() (
-    assets: CustomAssets,
-    commonAssets: controllers.Assets,
-    hentaiConfig: HentaiConfig,
-    wSClient: WSClient,
-    fileUtil: FileUtil,
-    controllerComponents: ControllerComponents
-) extends CommonController(controllerComponents) {
+  assets: CustomAssets,
+  commonAssets: controllers.Assets,
+  hentaiConfig: HentaiConfig,
+  wSClient: WSClient,
+  fileUtil: FileUtil,
+  controllerComponents: ControllerComponents) extends CommonController(controllerComponents) {
 
   import hentaiConfig._
 
@@ -102,7 +101,7 @@ class Assets @Inject() (
         //val url = s"http://192.168.1.112:91/" + UriEncoding.encodePathSegment(s"迅雷下载/${tempFile.toPath.toRealPath().toString.drop(parentPathStr.size)}", "utf-8")
         //val url = s"http://192.168.1.112:91/迅雷下载/${tempFile.toPath.toRealPath().toUri.toString.drop(parentUrl.size)}"
         val url = s"${tempFile.toRealPath().toUri.toASCIIString.drop(parentFile.toRealPath().toUri.toASCIIString.size)}"
-          //UriEncoding.encodePathSegment(UriEncoding.decodePath(s"迅雷下载/${tempFile.toPath.toRealPath().toUri.toString.drop(parentUrl.size + 1)}", "utf-8"), "utf-8")
+        //UriEncoding.encodePathSegment(UriEncoding.decodePath(s"迅雷下载/${tempFile.toPath.toRealPath().toUri.toString.drop(parentUrl.size + 1)}", "utf-8"), "utf-8")
         Future.successful(MovedPermanently(s"http://192.168.1.112/$url"))
         //assets.at(path, tempFinalString)
       }
@@ -132,8 +131,7 @@ class Assets @Inject() (
           } else {
             Future successful Ok("缓存目录不是文件夹，不作处理")
           }
-      }
-    )
+      })
   }
 
   def withAss(file1: String) = Action.async { implicit request =>

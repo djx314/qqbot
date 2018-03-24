@@ -23,5 +23,4 @@ object FileUrlGen extends (String => Option[URL]) {
 @Singleton
 class CustomAssetsMetadata @Inject() (
   config: AssetsConfiguration,
-  fileMimeTypes: FileMimeTypes
-) extends DefaultAssetsMetadata(config, FileUrlGen, fileMimeTypes)
+  fileMimeTypes: FileMimeTypes) extends DefaultAssetsMetadata(config, FileUrlGen, fileMimeTypes)

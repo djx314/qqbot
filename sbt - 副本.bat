@@ -1,0 +1,1 @@
+java -Xss300M -jar -Dsbt.override.build.repos=false --illegal-access=warn --add-modules java.xml.bind "./sbt-launch.jar"

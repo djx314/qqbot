@@ -1,7 +1,7 @@
 package utils
 
 import controllers.AssetsBuilder
-import play.api.mvc.{RequestHeader, Result}
+import play.api.mvc.{ RequestHeader, Result }
 
 import scala.concurrent.Future
 
