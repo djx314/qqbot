@@ -2,33 +2,27 @@ package assist.controllers
 
 import java.io.File
 import java.net.URI
-import java.nio.file.{ Files, Paths }
-import javax.inject.{ Inject, Named, Singleton }
+import java.nio.file.{Files, Paths}
 
 import archer.controllers.CommonController
 import controllers.CustomAssets
-import models.{ PathInfo, TempFileInfo }
+import models.{PathInfo, TempFileInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
 import play.api.mvc.ControllerComponents
-import play.utils.UriEncoding
-import utils.{ AssetsUtil, FileUtil, HentaiConfig }
-import io.circe.syntax._
-import io.circe._
-import io.circe.generic.auto._
+import utils.{FileUtil, HentaiConfig}
 import org.slf4j.LoggerFactory
 
-import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
-@Singleton
-class Assets @Inject() (
-  assets: CustomAssets,
-  commonAssets: controllers.Assets,
-  hentaiConfig: HentaiConfig,
-  wSClient: WSClient,
-  fileUtil: FileUtil,
-  controllerComponents: ControllerComponents) extends CommonController(controllerComponents) {
+class Assets(
+    assets: CustomAssets
+  , commonAssets: controllers.Assets
+  , hentaiConfig: HentaiConfig
+  , wSClient: WSClient
+  , fileUtil: FileUtil
+  , controllerComponents: ControllerComponents
+) extends CommonController(controllerComponents) {
 
   import hentaiConfig._
 
@@ -74,13 +68,13 @@ class Assets @Inject() (
     //val path = rootPath
     val parentFile = Paths.get(rootPath)
     val currentUrl = parentFile.toUri.resolve(file1)
-    val fileModel = Paths.get(currentUrl)
+    val fileModel  = Paths.get(currentUrl)
     if (!Files.exists(fileModel)) {
       Future successful NotFound("找不到文件")
     } else if (Files.isDirectory(fileModel)) {
       Future successful NotFound("找不到文件")
     } else {
-      val tempDir = fileModel.getParent.resolve(hentaiConfig.tempDirectoryName)
+      val tempDir      = fileModel.getParent.resolve(hentaiConfig.tempDirectoryName)
       val tempInfoFile = tempDir.resolve(fileModel.getFileName.toString + "." + hentaiConfig.encodeInfoSuffix)
 
       val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile)
@@ -110,15 +104,16 @@ class Assets @Inject() (
 
   def deleteTempDir = Action.async { implicit request =>
     PathInfo.pathInfoForm.bindFromRequest.fold(
-      formWithErrors => {
+        formWithErrors => {
         Future.successful(BadRequest("错误的参数"))
-      }, {
+      }
+      , {
         case PathInfo(file1) =>
-          val path = rootPath
+          val path       = rootPath
           val parentFile = new File(path)
-          val parentUrl = parentFile.toURI.toString
+          val parentUrl  = parentFile.toURI.toString
           val currentUrl = new URI(parentUrl + file1)
-          val fileModel = new File(currentUrl)
+          val fileModel  = new File(currentUrl)
 
           val currentPath = fileModel.toURI.toString
 
@@ -131,31 +126,32 @@ class Assets @Inject() (
           } else {
             Future successful Ok("缓存目录不是文件夹，不作处理")
           }
-      })
+      }
+    )
   }
 
   def withAss(file1: String) = Action.async { implicit request =>
-    val path = rootPath
-    val rootFile = new File(path)
-    val rootUrl = rootFile.toURI.toString
+    val path       = rootPath
+    val rootFile   = new File(path)
+    val rootUrl    = rootFile.toURI.toString
     val currentUrl = new URI(rootUrl + file1)
-    val fileModel = new File(currentUrl)
+    val fileModel  = new File(currentUrl)
     val parentFile = fileModel.getParentFile
 
-    val fileUrl = fileModel.toURI.toString.drop(rootUrl.size)
+    val fileUrl   = fileModel.toURI.toString.drop(rootUrl.size)
     val parentUrl = parentFile.toURI.toString.drop(rootUrl.size)
 
     Future successful Ok(views.html.assEncode(fileUrl)(parentUrl))
   }
 
   def player(file1: String) = Action.async { implicit request =>
-    val path = rootPath
+    val path       = rootPath
     val parentFile = new File(path)
-    val parentUrl = parentFile.toURI.toString
+    val parentUrl  = parentFile.toURI.toString
     val currentUrl = new URI(parentUrl + file1)
-    val fileModel = new File(currentUrl)
+    val fileModel  = new File(currentUrl)
 
-    val tempDir = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
+    val tempDir      = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
     val tempInfoFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
 
     val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile.toPath)

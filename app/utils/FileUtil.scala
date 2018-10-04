@@ -1,10 +1,9 @@
 package utils
 
-import java.io.File
-import java.nio.file.{ Files, Path }
-import javax.inject.{ Inject, Singleton }
+import java.nio.file.{Files, Path}
+import javax.inject.{Inject, Singleton}
 
-import models.{ DateTimeFormat, TempFileInfo }
+import models.{DateTimeFormat, TempFileInfo}
 
 trait FileUtil {
 
@@ -13,8 +12,8 @@ trait FileUtil {
     Files.createDirectories(tempDirectory)
 
     val tempInfoFile = tempDirectory.resolve(file.getFileName.toString + "." + encodeInfoSuffix)
-    val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile)
-    val tempFile = tempDirectory.resolve(file.getFileName.toString + "." + tempInfo.encodeSuffix)
+    val tempInfo     = TempFileInfo.fromUnknowPath(tempInfoFile)
+    val tempFile     = tempDirectory.resolve(file.getFileName.toString + "." + tempInfo.encodeSuffix)
     tempFile -> Files.exists(tempFile)
   }
 
@@ -31,4 +30,4 @@ trait FileUtil {
 }
 
 @Singleton
-class FileUtilImpl @Inject() () extends FileUtil
+class FileUtilImpl @Inject()() extends FileUtil

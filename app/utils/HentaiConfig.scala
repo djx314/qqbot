@@ -1,7 +1,7 @@
 package utils
 
 import java.text.SimpleDateFormat
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
 import models.DateTimeFormat
 import play.api.Configuration
@@ -22,16 +22,15 @@ trait HentaiConfig {
 }
 
 @Singleton
-class HentaiConfigImpl @Inject() (
-  configuration: Configuration) extends HentaiConfig {
+class HentaiConfigImpl @Inject()(configuration: Configuration) extends HentaiConfig {
 
-  override val rootPath = configuration.get[String]("djx314.hentai.root.path")
-  override val encodeSuffix = configuration.get[Seq[String]]("djx314.hentai.encode.suffix")
+  override val rootPath          = configuration.get[String]("djx314.hentai.root.path")
+  override val encodeSuffix      = configuration.get[Seq[String]]("djx314.hentai.encode.suffix")
   override val tempDirectoryName = configuration.get[String]("djx314.hentai.encode.temp.directory.name")
 
-  override val encoderUrl = configuration.get[String]("djx314.hentai.url.encoder")
+  override val encoderUrl     = configuration.get[String]("djx314.hentai.url.encoder")
   override val isEncodingrUrl = configuration.get[String]("djx314.hentai.url.isEncoding")
-  override val selfUrl = configuration.get[String]("djx314.hentai.url.self")
+  override val selfUrl        = configuration.get[String]("djx314.hentai.url.self")
   //override val tempFileSuffix = configuration.get[String]("djx314.hentai.encode.tempFileSuffix")
 
 }

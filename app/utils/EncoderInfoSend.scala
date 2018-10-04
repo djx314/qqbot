@@ -1,53 +1,51 @@
 package utils
 
 import java.nio.charset.Charset
-import java.nio.file.{ Files, Path, Paths }
+import java.nio.file.{Files, Path, Paths}
 import java.text.DecimalFormat
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
-import akka.stream.scaladsl.{ FileIO, Source }
+import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
-import play.api.libs.ws.{ BodyWritable, SourceBody, WSClient }
+import play.api.libs.ws.{BodyWritable, SourceBody, WSClient}
 import play.api.mvc.MultipartFormData
-import play.api.mvc.MultipartFormData.{ DataPart, FilePart }
+import play.api.mvc.MultipartFormData.{DataPart, FilePart}
 import play.core.formatters.Multipart
 
 import scala.concurrent.Future
 import scala.util.Failure
 
 @Singleton
-class EncoderInfoSend @Inject() (
-  ws: WSClient,
-  hentaiConfig: HentaiConfig)(implicit defaultExecutionContext: scala.concurrent.ExecutionContext) {
+class EncoderInfoSend @Inject()(ws: WSClient, hentaiConfig: HentaiConfig)(implicit defaultExecutionContext: scala.concurrent.ExecutionContext) {
 
   //val wsClientConfig: WSClientConfig = WSClientConfig(connectionTimeout = Duration.Inf)
   //val ws1 = NingWSClient(NingWSClientConfig(wsClientConfig = wsClientConfig))
 
   val logger = LoggerFactory.getLogger(classOf[EncoderInfoSend])
   //implicit val _ec = defaultExecutionContext
-  def uploadVideo(fileStr: Path): Future[String] = Future {
+  def uploadVideo(fileStr: Path): Future[String] =
+    Future {
 
-    val path = Paths.get(hentaiConfig.rootPath)
-    //val parentFile = Paths.get(path, fileStr)
-    val sourceFile = fileStr
-    //val parentUrl = parentFile.toURI.toString
-    //val currentUrl = new URI(parentUrl + fileStr)
-    //val sourceFile = new File(currentUrl)
-    val key = s"里番-${sourceFile.getFileName}"
+      val path = Paths.get(hentaiConfig.rootPath)
+      //val parentFile = Paths.get(path, fileStr)
+      val sourceFile = fileStr
+      //val parentUrl = parentFile.toURI.toString
+      //val currentUrl = new URI(parentUrl + fileStr)
+      //val sourceFile = new File(currentUrl)
+      val key = s"里番-${sourceFile.getFileName}"
 
-    val fileExists = Files.exists(sourceFile)
+      val fileExists = Files.exists(sourceFile)
 
-    logger.info(
-      s"""开始发送里番文件
+      logger.info(s"""开始发送里番文件
          |文件名:${sourceFile.getFileName}
          |文件是否存在于文件系统:${if (fileExists) "是" else "否"}""".stripMargin)
 
-    val fileSize = Files.size(sourceFile)
-    val decimalFormat = new DecimalFormat(",###")
-    val fileFormattedSize = decimalFormat.format(fileSize)
+      val fileSize          = Files.size(sourceFile)
+      val decimalFormat     = new DecimalFormat(",###")
+      val fileFormattedSize = decimalFormat.format(fileSize)
 
-    /*import org.apache.http.client.methods.CloseableHttpResponse
+      /*import org.apache.http.client.methods.CloseableHttpResponse
     import org.apache.http.client.methods.HttpPost
     import org.apache.http.util.CharsetUtils
 
@@ -166,114 +164,125 @@ class EncoderInfoSend @Inject() (
                         |文件大小:${fileFormattedSize}字节""".stripMargin, e)
     }*/
 
-    //val aa = new String(encode(Charset.forName("gbk"), sourceFile.getFileName.toString).toByteArray, "gbk")
-    //【钢琴_郎朗】郎朗_视奏《前前前世》
-    //\??????_?????????_?????????????????_RADWIMPS?
-    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "gbk")
-    //銆愰挗鐞確閮庢湕銆戦儙鏈梍瑙嗗銆婂墠鍓嶅墠涓栥?嬮挗鐞存洸_RADWIMPS銆愪綘
-    //ADWIMPS【你的名字??????更换无水印源???_演奏_音乐_bilibili_哔哩哔哩
-    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray)
-    //銆愰挗鐞確閮庢湕銆戦儙鏈梍瑙嗗銆婂墠鍓嶅墠涓栥?嬮挗鐞存洸_RADWIMPS銆愪綘
-    //ADWIMPS【你的名字??????更换无水印源???_演奏_音乐_bilibili_哔哩哔哩  println("11" * 100)
-    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "utf-8")
-    //【钢琴_郎朗】郎朗_视奏《前前前世》钢琴曲_RADWIMPS【你的名字】【更换无水印源】_演
-    //\??????_?????????_?????????????????_RADWIMPS?
-    //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "iso8859-1")
-    //??é?????_é????????é?????_è§??????????????????????é????????_RADWIMP
-    //??é?????_é????????é?????_è§??????????????????????é????????_RADWIMP
-    //val aa = new String(encode(Charset.forName("iso8859-1"), sourceFile.getFileName.toString).toByteArray, "gbk")
-    //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
-    //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
+      //val aa = new String(encode(Charset.forName("gbk"), sourceFile.getFileName.toString).toByteArray, "gbk")
+      //【钢琴_郎朗】郎朗_视奏《前前前世》
+      //\??????_?????????_?????????????????_RADWIMPS?
+      //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "gbk")
+      //銆愰挗鐞確閮庢湕銆戦儙鏈梍瑙嗗銆婂墠鍓嶅墠涓栥?嬮挗鐞存洸_RADWIMPS銆愪綘
+      //ADWIMPS【你的名字??????更换无水印源???_演奏_音乐_bilibili_哔哩哔哩
+      //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray)
+      //銆愰挗鐞確閮庢湕銆戦儙鏈梍瑙嗗銆婂墠鍓嶅墠涓栥?嬮挗鐞存洸_RADWIMPS銆愪綘
+      //ADWIMPS【你的名字??????更换无水印源???_演奏_音乐_bilibili_哔哩哔哩  println("11" * 100)
+      //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "utf-8")
+      //【钢琴_郎朗】郎朗_视奏《前前前世》钢琴曲_RADWIMPS【你的名字】【更换无水印源】_演
+      //\??????_?????????_?????????????????_RADWIMPS?
+      //val aa = new String(encode(Charset.forName("utf-8"), sourceFile.getFileName.toString).toByteArray, "iso8859-1")
+      //??é?????_é????????é?????_è§??????????????????????é????????_RADWIMP
+      //??é?????_é????????é?????_è§??????????????????????é????????_RADWIMP
+      //val aa = new String(encode(Charset.forName("iso8859-1"), sourceFile.getFileName.toString).toByteArray, "gbk")
+      //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
+      //???_?????_???????????_RADWIMPS??????????????_??_??_bilibil
 
-    //(ws.url(hentaiConfig.encoderUrl): StandaloneWSRequest)
-    ws.url(hentaiConfig.encoderUrl)
-      .addHttpHeaders()
-      .post(
-        Source(
-          FilePart("video_0", new String(sourceFile.getFileName.toString.getBytes("utf-8"), "gbk"), Option("""multipart/form-data; charset=UTF-8"""), FileIO.fromPath(sourceFile)) ::
-            DataPart("videoKey", key) ::
-            DataPart("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size)) ::
-            DataPart("returnPath", hentaiConfig.selfUrl) ::
-            //DataPart("encodeType", "FormatFactoryEncoder") ::
-            DataPart("encodeType", "ffmpegEncoder") ::
-            DataPart("videoLength", 1.toString) ::
-            Nil))
-      .map { wsResult =>
-        val resultModel = if (wsResult.status == 200) {
-          logger.info(
-            s"""上传文件成功
+      //(ws.url(hentaiConfig.encoderUrl): StandaloneWSRequest)
+      ws.url(hentaiConfig.encoderUrl)
+        .addHttpHeaders()
+        .post(
+            Source(
+              FilePart(
+                "video_0"
+              , new String(sourceFile.getFileName.toString.getBytes("utf-8"), "gbk")
+              , Option("""multipart/form-data; charset=UTF-8""")
+              , FileIO.fromPath(sourceFile)
+            ) ::
+              DataPart("videoKey", key) ::
+              DataPart("videoInfo", sourceFile.toUri.toString.drop(path.toUri.toString.size)) ::
+              DataPart("returnPath", hentaiConfig.selfUrl) ::
+              //DataPart("encodeType", "FormatFactoryEncoder") ::
+              DataPart("encodeType", "ffmpegEncoder") ::
+              DataPart("videoLength", 1.toString) ::
+              Nil
+          )
+        )
+        .map { wsResult =>
+          val resultModel = if (wsResult.status == 200) {
+            logger.info(s"""上传文件成功
                |文件名:${sourceFile.getFileName}
                |文件路径:${sourceFile}
                |文件大小:${fileFormattedSize}字节
              """.stripMargin)
-          wsResult.body
-        } else {
-          val errorStr =
-            s"""上传文件返回异常代码:${wsResult.status}
+            wsResult.body
+          } else {
+            val errorStr =
+              s"""上传文件返回异常代码:${wsResult.status}
                |文件路径:${sourceFile}
                |错误内容:\n${wsResult.body}
                |文件大小:${fileFormattedSize}字节""".stripMargin
-          val errorStr1 =
-            s"""上传文件返回异常代码:${wsResult.status}
+            val errorStr1 =
+              s"""上传文件返回异常代码:${wsResult.status}
                |文件路径:${sourceFile}
                |文件大小:${fileFormattedSize}字节""".stripMargin
-          logger.error(errorStr1)
-          wsResult.body
+            logger.error(errorStr1)
+            wsResult.body
+          }
+          resultModel
         }
-        resultModel
-      }.andThen {
-        case Failure(e) =>
-          logger.error(s"""上传文件失败
+        .andThen {
+          case Failure(e) =>
+            logger.error(
+                s"""上传文件失败
                           |文件名:${sourceFile.getFileName}
                           |文件路径:${sourceFile}
-                          |文件大小:${fileFormattedSize}字节""".stripMargin, e)
-      }
-  }.flatMap(identity)
+                          |文件大小:${fileFormattedSize}字节""".stripMargin
+              , e
+            )
+        }
+    }.flatMap(identity)
 
   @deprecated("已不再使用，目前使用 javascript 实现的前端字幕代替", "0.0.1")
-  def uploadVideoWithAss(videoFile: Path, assFile: Path): Future[String] = Future {
-    val path = hentaiConfig.rootPath
-    val parentFile = Paths.get(path)
-    val parentUrl = parentFile.toUri.toString
-    val videoPath = videoFile
-    val assPath = assFile
-    val videoPathExists = Files.exists(videoPath)
-    val assPathExists = Files.exists(assPath)
+  def uploadVideoWithAss(videoFile: Path, assFile: Path): Future[String] =
+    Future {
+      val path            = hentaiConfig.rootPath
+      val parentFile      = Paths.get(path)
+      val parentUrl       = parentFile.toUri.toString
+      val videoPath       = videoFile
+      val assPath         = assFile
+      val videoPathExists = Files.exists(videoPath)
+      val assPathExists   = Files.exists(assPath)
 
-    val key = s"里番-${videoPath.getFileName}"
+      val key = s"里番-${videoPath.getFileName}"
 
-    val decimalFormat = new DecimalFormat(",###")
-    val videoFileSize = Files.size(videoPath)
-    val videoFileFormattedSize = decimalFormat.format(videoFileSize)
-    Charset.defaultCharset()
+      val decimalFormat          = new DecimalFormat(",###")
+      val videoFileSize          = Files.size(videoPath)
+      val videoFileFormattedSize = decimalFormat.format(videoFileSize)
+      Charset.defaultCharset()
 
-    val assFileSize = Files.size(assPath)
-    val assFileFormattedSize = decimalFormat.format(assFileSize)
+      val assFileSize          = Files.size(assPath)
+      val assFileFormattedSize = decimalFormat.format(assFileSize)
 
-    logger.info(
-      s"""开始发送里番文件
+      logger.info(s"""开始发送里番文件
          |视频文件名:${videoPath.getFileName}
          |视频文件是否存在于文件系统:${if (videoPathExists) "是" else "否"}
          |字幕文件名:${assPath.getFileName}
          |字幕文件是否存在于文件系统:${if (assPathExists) "是" else "否"}""".stripMargin)
 
-    ws.url(hentaiConfig.encoderUrl)
-      .post(
-        Source(
-          FilePart("video_0", videoPath.getFileName.toString, Option("text/plain"), FileIO.fromPath(videoPath)) ::
-            FilePart("video_1", assPath.getFileName.toString, Option("text/plain"), FileIO.fromPath(assPath)) ::
-            DataPart("videoKey", key) ::
-            DataPart("videoInfo", videoPath.toUri.toString.drop(parentUrl.size)) ::
-            DataPart("returnPath", hentaiConfig.selfUrl) ::
-            //DataPart("encodeType", "FormatFactoryEncoder") ::
-            DataPart("encodeType", "ffmpegEncoderWithAss") ::
-            DataPart("videoLength", 2.toString) ::
-            Nil))
-      .map { wsResult =>
-        val resultModel = if (wsResult.status == 200) {
-          //RequestInfo(true, wsResult.body)
-          logger.info(
-            s"""上传文件成功
+      ws.url(hentaiConfig.encoderUrl)
+        .post(
+            Source(
+              FilePart("video_0", videoPath.getFileName.toString, Option("text/plain"), FileIO.fromPath(videoPath)) ::
+              FilePart("video_1", assPath.getFileName.toString, Option("text/plain"), FileIO.fromPath(assPath)) ::
+              DataPart("videoKey", key) ::
+              DataPart("videoInfo", videoPath.toUri.toString.drop(parentUrl.size)) ::
+              DataPart("returnPath", hentaiConfig.selfUrl) ::
+              //DataPart("encodeType", "FormatFactoryEncoder") ::
+              DataPart("encodeType", "ffmpegEncoderWithAss") ::
+              DataPart("videoLength", 2.toString) ::
+              Nil
+          )
+        )
+        .map { wsResult =>
+          val resultModel = if (wsResult.status == 200) {
+            //RequestInfo(true, wsResult.body)
+            logger.info(s"""上传文件成功
                |视频文件名:${videoPath.getFileName}
                |字幕文件名:${assPath.getFileName}
                |视频文件路径:${videoPath}
@@ -281,10 +290,10 @@ class EncoderInfoSend @Inject() (
                |视频文件大小:${videoFileFormattedSize}字节
                |字幕文件大小:${assFileFormattedSize}字节
               """.stripMargin)
-          wsResult.body
-        } else {
-          val errorStr =
-            s"""上传文件返回异常代码:${wsResult.status}
+            wsResult.body
+          } else {
+            val errorStr =
+              s"""上传文件返回异常代码:${wsResult.status}
                |视频文件名:${videoPath.getFileName}
                |字幕文件名:${assPath.getFileName}
                |视频文件路径:${videoPath}
@@ -292,21 +301,25 @@ class EncoderInfoSend @Inject() (
                |视频文件大小:${videoFileFormattedSize}字节
                |字幕文件大小:${assFileFormattedSize}字节
                |错误内容:\n${wsResult.body}""".stripMargin
-          //RequestInfo(false, errorStr)
-          logger.error(errorStr)
-          wsResult.body
+            //RequestInfo(false, errorStr)
+            logger.error(errorStr)
+            wsResult.body
+          }
+          resultModel
         }
-        resultModel
-      }.andThen {
-        case Failure(e) =>
-          logger.error(s"""上传文件失败
+        .andThen {
+          case Failure(e) =>
+            logger.error(
+                s"""上传文件失败
                         |视频文件名:${videoPath.getFileName}
                         |字幕文件名:${assPath.getFileName}
                         |视频文件路径:${videoPath}
                         |字幕文件路径:${assPath}
                         |视频文件大小:${videoFileFormattedSize}字节
-                        |字幕文件大小:${assFileFormattedSize}字节""".stripMargin, e)
-      }
-  }.flatMap(identity)
+                        |字幕文件大小:${assFileFormattedSize}字节""".stripMargin
+              , e
+            )
+        }
+    }.flatMap(identity)
 
 }
