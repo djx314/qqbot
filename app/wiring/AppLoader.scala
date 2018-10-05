@@ -36,11 +36,7 @@ class AppComponents(context: Context) extends BuiltInComponentsFromContext(conte
   private def AssetsMetadataGen(a: _root_.controllers.AssetsMetadataProvider) = a.get
   private lazy val AssetsMetadata                                             = wireWith(AssetsMetadataGen _)
 
-  private lazy val Assets = wire[_root_.controllers.Assets]
-  private lazy val CustomAssets = {
-    lazy val CustomAssetsMetadata = wire[_root_.controllers.CustomAssetsMetadata]
-    wire[_root_.controllers.CustomAssets]
-  }
+  private lazy val Assets                           = wire[_root_.controllers.Assets]
   private lazy val archerAssets                     = wire[assist.controllers.Assets]
   private lazy val CommonAssetsController           = wire[archer.controllers.CommonAssetsController]
   private lazy val HentaiConfig: HentaiConfig       = wire[HentaiConfigImpl]

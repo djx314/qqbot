@@ -5,7 +5,6 @@ import java.net.URI
 import java.nio.file.{Files, Paths}
 
 import archer.controllers.CommonController
-import controllers.CustomAssets
 import models.{PathInfo, TempFileInfo}
 import org.apache.commons.io.FileUtils
 import play.api.libs.ws.WSClient
@@ -16,8 +15,7 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.Future
 
 class Assets(
-    assets: CustomAssets
-  , commonAssets: controllers.Assets
+    commonAssets: controllers.Assets
   , hentaiConfig: HentaiConfig
   , wSClient: WSClient
   , fileUtil: FileUtil

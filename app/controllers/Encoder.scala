@@ -4,10 +4,8 @@ import java.io.File
 import java.net.{URI, URLDecoder}
 import java.nio.charset.Charset
 import java.nio.file.{Files, Paths}
-import javax.inject.Named
 
 import archer.controllers.CommonController
-import controllers.CustomAssets
 import models._
 import play.api.mvc.ControllerComponents
 import utils.{EncoderInfoSend, FileUtil, HentaiConfig}
@@ -21,8 +19,7 @@ import play.api.libs.circe.Circe
 import scala.collection.JavaConverters._
 
 class Encoder(
-    @Named("hentai") assets: CustomAssets
-  , hentaiConfig: HentaiConfig
+    hentaiConfig: HentaiConfig
   , fileUtil: FileUtil
   , encoderInfoSend: EncoderInfoSend
   , controllerComponents: ControllerComponents

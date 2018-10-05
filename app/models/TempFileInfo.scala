@@ -37,9 +37,7 @@ case class TempFileInfo(
 
   val printer: Printer = indented("  ")
 
-  def beautifulJson(implicit encoder: Encoder[TempFileInfo]): String = {
-    self.asJson.pretty(printer)
-  }
+  def beautifulJson(implicit df: DateTimeFormat): String = self.asJson.pretty(printer)
 
 }
 
@@ -71,7 +69,7 @@ object TempFileInfo {
     exportEncoder[TempFileInfo].instance
   }
 
-  def fromUnknowString(str: String)(implicit decoder: Decoder[TempFileInfo]): TempFileInfo = {
+  def fromUnknowString(str: String)(implicit df: DateTimeFormat): TempFileInfo = {
     val json = io.circe.parser.parse(str) match {
       case Left(e) => Json.obj()
       case Right(j) =>
@@ -87,7 +85,7 @@ object TempFileInfo {
     }
   }
 
-  def fromUnknowPath(path: Path)(implicit decoder: Decoder[TempFileInfo]): TempFileInfo = {
+  def fromUnknowPath(path: Path)(implicit df: DateTimeFormat): TempFileInfo = {
     if (Files.exists(path)) {
       val str = Files.readAllLines(path).asScala.mkString
       val json = io.circe.parser.parse(str) match {
