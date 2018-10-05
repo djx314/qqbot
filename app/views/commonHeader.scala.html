@@ -48,10 +48,10 @@ content="width=device-width, initial-scale=1" />
             name:  "archer"
         }],
         paths: {
-            "baseLayui": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/layui-v2.2.45/layui/layui")",
+            "baseLayui": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/layui-v2.4.3/layui/layui")",
             "jquery": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/jquery/jquery-1.12.4.min")",
             "jqueryCookie": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/jquery/jquery.cookie")",
-            "knockout": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/knockout/knockout-3.4.2")",
+            "knockout": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/knockout/knockout-3.5.0rc2")",
             "komapping": "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/knockout/knockout.mapping-2.4.1")",
             "text": "@archer.controllers.routes.CommonAssetsController.staticAt("lib/requirejs-text/text")",
             "lifan": "@archer.controllers.routes.CommonAssetsController.staticAt("app")",
@@ -64,11 +64,11 @@ content="width=device-width, initial-scale=1" />
     define("layui", function(require) {
         require("baseLayui");
         layui.config({
-            dir: "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/layui-v2.2.45/layui/")",
+            dir: "@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/layui-v2.4.3/layui/")",
             version: true
         });
         return layui;
     });
 </script>
-<link rel="stylesheet" type="text/css" href="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/layui-v2.2.45/layui/css/layui.css")" />
+<link rel="stylesheet" type="text/css" href="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/layui-v2.4.3/layui/css/layui.css")" />
 <link rel="stylesheet" type="text/css" href="@archer.controllers.routes.CommonAssetsController.staticAt("frameworks/durandal-2.2.0/css/durandal.css")" />
