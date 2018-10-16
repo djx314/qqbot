@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<!--定义一个名为STDOUT的appender，并将其关联到ch.qos.logback.core.ConsoleAppender -->
-	<appender name="STDOUT" class="logback.ConsoleAppender">
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<!-- encoders 作用是将logger事件转换成字节数组，并将字节数组写入到输出流 -->
 		<encoder>
 			<!-- 控制台输出编码 -->
@@ -11,7 +11,7 @@
 		</encoder>
 	</appender>
 
-	<appender name="SIMPLE_STDOUT" class="logback.ConsoleAppender">
+	<appender name="SIMPLE_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<!-- encoders 作用是将logger事件转换成字节数组，并将字节数组写入到输出流 -->
 		<encoder>
 			<!-- 控制台输出编码 -->

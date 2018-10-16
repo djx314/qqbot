@@ -1,24 +1,11 @@
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file        assist.controllers.Assets.at(file)
-#GET        /assets        assist.controllers.Assets.root
 GET        /staticAssets/*file        archer.controllers.CommonAssetsController.staticAt(root = "/public", file)
-POST        /encode        assist.controllers.Encoder.encodeFile
 
-POST     /uploadEncodedFile   assist.controllers.Encoder.uploadEncodedFile
-#GET     /uploadSuccessFile   assist.controllers.Encoder.encodeSuccessPage(refer: String)
+GET     /   assist.controllers.Assets.index
 
-GET     /tempfile/*file   assist.controllers.Assets.tempFile(file)
+POST     /qqbot_event   assist.controllers.Assets.qqbotEvent
 
-GET     /play/*file   assist.controllers.Assets.player(file)
+GET     /create   archer.controllers.CommonAssetsController.createTable
+GET     /clean   archer.controllers.CommonAssetsController.cleanTable
 
-POST     /deleteTempDir   assist.controllers.Assets.deleteTempDir
-
-POST     /dirInfoRequest   assist.controllers.FilesList.at
-
-GET     /withAss   assist.controllers.Assets.withAss(path: String)
-
-POST     /filesWithAss   assist.controllers.FilesList.atAss
-
-POST     /encodeWithAss   assist.controllers.Encoder.saveAssInfo
-
-GET     /   assist.controllers.Assets.files
+GET /random archer.controllers.CommonAssetsController.random

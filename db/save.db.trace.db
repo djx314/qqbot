@@ -1,0 +1,3 @@
+2018-10-17 01:42:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "image" already exists; SQL statement:
+create table "image" ("id" INTEGER NOT NULL AUTO_INCREMENT,"image_content" BLOB NOT NULL) [42101-197]

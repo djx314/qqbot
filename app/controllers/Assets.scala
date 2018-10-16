@@ -1,160 +1,126 @@
 package assist.controllers
 
-import java.io.File
-import java.net.URI
+import java.net.URL
 import java.nio.file.{Files, Paths}
+import java.util.UUID
 
-import archer.controllers.CommonController
-import models.{PathInfo, TempFileInfo}
-import org.apache.commons.io.FileUtils
-import play.api.libs.ws.WSClient
+import akka.util.ByteString
+import archer.controllers._
+import io.circe.{Json, Printer}
+import io.circe.syntax._
+import org.apache.commons.io.IOUtils
+import play.api.libs.ws.{BodyWritable, InMemoryBody, WSClient, WSResponse}
 import play.api.mvc.ControllerComponents
-import utils.{FileUtil, HentaiConfig}
 import org.slf4j.LoggerFactory
+import qqbot.models._
+import slick.basic.DatabaseConfig
+import slick.jdbc.H2Profile.api._
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent.Future
+import scala.util.Try
 
 class Assets(
     commonAssets: controllers.Assets
-  , hentaiConfig: HentaiConfig
   , wSClient: WSClient
-  , fileUtil: FileUtil
+  , dbConfig: DatabaseConfig[JdbcProfile]
   , controllerComponents: ControllerComponents
 ) extends CommonController(controllerComponents) {
 
-  import hentaiConfig._
+  implicit def bodyWritableOf_Json(implicit printer: Printer = Printer.noSpaces): BodyWritable[Json] = {
+    BodyWritable(json => InMemoryBody(ByteString.fromString(json.pretty(printer))), "application/json")
+  }
 
   implicit def ec = defaultExecutionContext
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  def at(file1: String) = Action.async { implicit request =>
-    //val path = rootPath
-    /*val parentFile = new File(path)
-    val parentUrl = parentFile.toURI.toString
-    val currentUrl = new URI(parentUrl + file1)
-    val fileModel = new File(currentUrl)
-    if (!fileModel.exists) {
-        Future successful NotFound("找不到目录")
-    } else if (fileModel.isDirectory) {
-      Future successful Ok(views.html.index(file1))
-    } else {
-      AssetsUtil.at(assets, path, file1)
-    }*/
-    //AssetsUtil.at(assets, path, file1)
-    //println(file1)
-    //val url = s"http://192.168.1.112/" + UriEncoding.encodePathSegment(s"${file1}", "utf-8")
-    //println(url)
-    Future.successful(MovedPermanently(s"http://192.168.1.112/$file1"))
-  }
-
-  def files = Action.async { implicit request =>
+  def index = Action.async { implicit request =>
     Future.successful(Ok(views.html.index()))
   }
-  //def root = at("")
-  def staticAt(root: String, path: String) = commonAssets.at(root, path)
 
-  def tempFile(file1: String) = Action.async { implicit request =>
-    /*val parentPath = Paths.get(rootPath)
-    println(parentPath.toUri.toString)
-    val currentFile = Paths.get(parentPath.toUri.resolve(file1))
-    println(file1)
-    println(currentFile.toRealPath())
-    val urlSuffix =
-      s"${currentFile.toRealPath().toUri.toASCIIString.drop(parentPath.toRealPath().toUri.toASCIIString.size)}"
-    Future.successful(Redirect(s"http://192.168.1.112/$urlSuffix"))*/
-    //val path = rootPath
-    val parentFile = Paths.get(rootPath)
-    val currentUrl = parentFile.toUri.resolve(file1)
-    val fileModel  = Paths.get(currentUrl)
-    if (!Files.exists(fileModel)) {
-      Future successful NotFound("找不到文件")
-    } else if (Files.isDirectory(fileModel)) {
-      Future successful NotFound("找不到文件")
-    } else {
-      val tempDir      = fileModel.getParent.resolve(hentaiConfig.tempDirectoryName)
-      val tempInfoFile = tempDir.resolve(fileModel.getFileName.toString + "." + hentaiConfig.encodeInfoSuffix)
-
-      val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile)
-
-      val tempFile = tempDir.resolve(fileModel.getFileName.toString + "." + tempInfo.encodeSuffix)
-
-      if (!Files.exists(tempFile)) {
-        Future successful NotFound("缓存文件不存在")
-      } else {
-        logger.info(s"访问转码后的文件:\n${tempFile.toRealPath().toString}")
-        //val tempFinalString = tempString.replaceAllLiterally(File.separator, "/")
-        //println(tempString)
-        //println(tempFile.getCanonicalPath)
-        //println(tempFinalString)
-        //AssetsUtil.at(assets, path, UriEncoding.encodePathSegment(tempString, "utf-8"))
-        //val parentPathStr = parentFile.toRealPath().toString
-        //Future.successful(Redirect(s"http://192.168.1.112:91/迅雷下载/${tempFile.toPath.toRealPath().toUri.toString.drop(parentUrl.size)}"))
-        //val url = s"http://192.168.1.112:91/" + UriEncoding.encodePathSegment(s"迅雷下载/${tempFile.toPath.toRealPath().toString.drop(parentPathStr.size)}", "utf-8")
-        //val url = s"http://192.168.1.112:91/迅雷下载/${tempFile.toPath.toRealPath().toUri.toString.drop(parentUrl.size)}"
-        val url = s"${tempFile.toRealPath().toUri.toASCIIString.drop(parentFile.toRealPath().toUri.toASCIIString.size)}"
-        //UriEncoding.encodePathSegment(UriEncoding.decodePath(s"迅雷下载/${tempFile.toPath.toRealPath().toUri.toString.drop(parentUrl.size + 1)}", "utf-8"), "utf-8")
-        Future.successful(MovedPermanently(s"http://192.168.1.112/$url"))
-        //assets.at(path, tempFinalString)
-      }
+  def sendMessage(content: SendMessageContect): Future[WSResponse] = {
+    val url = "http://127.0.0.1:5700/send_msg"
+    content match {
+      case userMsg: SendUserMessage =>
+        wSClient.url(url).post(userMsg.asJson)
+      case groupMsg: SendGroupMessage =>
+        wSClient.url(url).post(groupMsg.asJson)
+      case discussMsg: SendDiscussMessage =>
+        wSClient.url(url).post(discussMsg.asJson)
     }
   }
 
-  def deleteTempDir = Action.async { implicit request =>
-    PathInfo.pathInfoForm.bindFromRequest.fold(
-        formWithErrors => {
-        Future.successful(BadRequest("错误的参数"))
-      }
-      , {
-        case PathInfo(file1) =>
-          val path       = rootPath
-          val parentFile = new File(path)
-          val parentUrl  = parentFile.toURI.toString
-          val currentUrl = new URI(parentUrl + file1)
-          val fileModel  = new File(currentUrl)
+  val imageDir      = "custom_image"
+  val imageRootPath = Paths.get("F:").resolve("CQP-xiaoi").resolve("酷Q Pro").resolve("data").resolve("image")
+  val imageDirPath  = imageRootPath.resolve(imageDir)
 
-          val currentPath = fileModel.toURI.toString
-
-          if (!fileModel.exists) {
-            Future successful Ok("目录本身不存在")
-          } else if (fileModel.isDirectory) {
-            val temFile = new File(fileModel, hentaiConfig.tempDirectoryName)
-            FileUtils.deleteDirectory(temFile)
-            Future successful Ok("删除成功")
-          } else {
-            Future successful Ok("缓存目录不是文件夹，不作处理")
-          }
+  def getPicFromUrl(url: URL): String = {
+    val uuid = UUID.randomUUID.toString
+    Files.createDirectories(imageDirPath)
+    Try {
+      val conn = url.openConnection
+      conn.connect
+      val ins = conn.getInputStream
+      try {
+        Files.copy(ins, imageDirPath.resolve(uuid))
+      } finally {
+        try {
+          ins.close
+        } catch {
+          case _: Throwable =>
+        }
       }
-    )
+    }
+    uuid
   }
 
-  def withAss(file1: String) = Action.async { implicit request =>
-    val path       = rootPath
-    val rootFile   = new File(path)
-    val rootUrl    = rootFile.toURI.toString
-    val currentUrl = new URI(rootUrl + file1)
-    val fileModel  = new File(currentUrl)
-    val parentFile = fileModel.getParentFile
-
-    val fileUrl   = fileModel.toURI.toString.drop(rootUrl.size)
-    val parentUrl = parentFile.toURI.toString.drop(rootUrl.size)
-
-    Future successful Ok(views.html.assEncode(fileUrl)(parentUrl))
+  def getPicByteFromUrl(cqNumber: String): Array[Byte] = {
+    val conn = new URL(cqNumber)
+    IOUtils.toByteArray(conn)
   }
 
-  def player(file1: String) = Action.async { implicit request =>
-    val path       = rootPath
-    val parentFile = new File(path)
-    val parentUrl  = parentFile.toURI.toString
-    val currentUrl = new URI(parentUrl + file1)
-    val fileModel  = new File(currentUrl)
+  val imagePrefix = "[CQ:image,file="
+  val urlPrefix   = ",url="
 
-    val tempDir      = new File(fileModel.getParentFile, hentaiConfig.tempDirectoryName)
-    val tempInfoFile = new File(tempDir, fileModel.getName + "." + hentaiConfig.encodeInfoSuffix)
+  def qqbotEvent = Action.async(circe.json[PostType]) { implicit request =>
+    logger.info(request.body.toString)
+    request.body match {
+      case siLiao: SiLiao if siLiao.message.indexOf("录入") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 =>
+        val fileUrl = siLiao.message.drop(siLiao.message.indexOf(urlPrefix) + urlPrefix.size).takeWhile(s => s != ',')
+        val arr     = getPicByteFromUrl(fileUrl)
+        dbConfig.db.run(ImageTable += Image(id = -1, imageContent = arr)).flatMap { row: Int =>
+          sendMessage(SendUserMessage(user_id = siLiao.user_id, message = s"${siLiao.sender.nickname}的图片录入成功"))
+        }
 
-    val tempInfo = TempFileInfo.fromUnknowPath(tempInfoFile.toPath)
+      case siLiao: SiLiao if siLiao.message.trim == "随机" =>
+        sendMessage(
+            SendUserMessage(
+              user_id = siLiao.user_id
+            , message = s"""[CQ:image,file=${imageDir}/${getPicFromUrl(new URL("http://127.0.0.1:9394/random"))}]喵喵喵"""
+          )
+        )
+      case qunXiaoXi: QunXiaoXi if qunXiaoXi.user_id == 909134790 && qunXiaoXi.message.trim == "谁是傻逼" =>
+        sendMessage(SendGroupMessage(group_id = qunXiaoXi.group_id, message = "我是傻逼"))
+      case qunXiaoXi: QunXiaoXi if qunXiaoXi.message.trim == "抱抱我" =>
+        sendMessage(SendGroupMessage(group_id = qunXiaoXi.group_id, message = s"抱抱${qunXiaoXi.sender.nickname}"))
+      case qunXiaoXi: QunXiaoXi if qunXiaoXi.message.trim == "随机" =>
+        sendMessage(
+            SendGroupMessage(
+              group_id = qunXiaoXi.group_id
+            , message = s"""[CQ:image,file=${imageDir}/${getPicFromUrl(new URL("http://127.0.0.1:9394/random"))}]我是喵喵酱,最可爱的喵喵酱"""
+          )
+        )
+      case qunXiaoXi: QunXiaoXi if qunXiaoXi.message.indexOf("录入") >= 0 && qunXiaoXi.message.indexOf(imagePrefix) >= 0 =>
+        val fileUrl = qunXiaoXi.message.drop(qunXiaoXi.message.indexOf(urlPrefix) + urlPrefix.size).takeWhile(s => s != ',')
+        val arr     = getPicByteFromUrl(fileUrl)
+        dbConfig.db.run(ImageTable += Image(id = -1, imageContent = arr)).flatMap { row: Int =>
+          sendMessage(SendGroupMessage(group_id = qunXiaoXi.group_id, message = s"${qunXiaoXi.sender.nickname}的图片录入成功"))
+        }
 
-    Future successful Ok(views.html.player(file1)(tempInfo.assFilePath)(tempInfo.assScale))
+      case _ =>
+    }
+    Future.successful(Ok(views.html.index()))
   }
 
 }

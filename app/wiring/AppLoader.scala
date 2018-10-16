@@ -1,14 +1,15 @@
 package wiring
 
 import akka.stream.Materializer
-import assist.controllers._
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
 import router.Routes
 import com.softwaremill.macwire._
-import utils._
+import play.api.db.slick.{DbName, SlickComponents}
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent.ExecutionContext
 
@@ -19,6 +20,13 @@ class InjectedAhcWSComponents(
   , override val materializer: Materializer
   , override val executionContext: ExecutionContext
 ) extends AhcWSComponents
+
+class InjectedSlickComponents(
+    override val environment: Environment
+  , override val configuration: Configuration
+  , override val applicationLifecycle: ApplicationLifecycle
+  , override val executionContext: ExecutionContext
+) extends SlickComponents
 
 class AppComponents(context: Context) extends BuiltInComponentsFromContext(context) with NoHttpFiltersComponents {
 
@@ -36,25 +44,12 @@ class AppComponents(context: Context) extends BuiltInComponentsFromContext(conte
   private def AssetsMetadataGen(a: _root_.controllers.AssetsMetadataProvider) = a.get
   private lazy val AssetsMetadata                                             = wireWith(AssetsMetadataGen _)
 
-  private lazy val Assets                           = wire[_root_.controllers.Assets]
-  private lazy val archerAssets                     = wire[assist.controllers.Assets]
-  private lazy val CommonAssetsController           = wire[archer.controllers.CommonAssetsController]
-  private lazy val HentaiConfig: HentaiConfig       = wire[HentaiConfigImpl]
-  private lazy val FileUtil: FileUtil               = wire[FileUtilImpl]
-  private lazy val Encoder: Encoder                 = wire[Encoder]
-  private lazy val EncoderInfoSend: EncoderInfoSend = wire[EncoderInfoSend]
-  private lazy val FilesList: FilesList             = wire[FilesList]
+  private lazy val Assets                 = wire[_root_.controllers.Assets]
+  private lazy val archerAssets           = wire[assist.controllers.Assets]
+  private lazy val CommonAssetsController = wire[archer.controllers.CommonAssetsController]
 
-  /*private lazy val Encode = wire[assist.controllers.Encode]
-  private lazy val VideoEncoders: VideoEncoders = wire[VideoEncodersImpl]
-
-  private lazy val FFmpegEncoder: FFmpegEncoder = wire[FFmpegEncoderImpl]
-  private lazy val FFmpegEncoderWithAss: FFmpegEncoderWithAss = wire[FFmpegEncoderWithAssImpl]
-  private lazy val OgvEncoder: OgvEncoder = wire[OgvEncoderImpl]
-  private lazy val Mp4Execution: Mp4Execution = wire[Mp4Execution]
-
-  private lazy val VideoPathConfig: VideoPathConfig with CurrentEncode with FFConfig = wire[VideoConfig]
-  private lazy val FilesReply: FilesReply = wire[FilesReplyImpl]*/
+  private lazy val slickApi: SlickComponents             = wire[InjectedSlickComponents]
+  private lazy val dbConfig: DatabaseConfig[JdbcProfile] = slickApi.slickApi.dbConfig(DbName("default"))
 
   /**
     * Assets 模块配置结束
@@ -65,32 +60,6 @@ class AppComponents(context: Context) extends BuiltInComponentsFromContext(conte
   private lazy val InjectedAhcWSComponents = wire[InjectedAhcWSComponents]
   private def wsGen(a: AhcWSComponents)    = a.wsClient
   private lazy val ws                      = wireWith(wsGen _)
-
-  /**
-    * ws 模块配置结束
-    */
-  /*private lazy val Index = wire[Index]
-
-  private lazy val WsbsTest = wire[WsbsTest]
-
-  private lazy val PatentModelService = wire[PatentModelService]
-  private lazy val Patent = wire[Patent]
-
-
-  private lazy val PatentComparison = wire[PatentComparison]
-  private lazy val PatentComparisonServices = wire[PatentComparisonServices]
-
-  private lazy val Task = wire[Task]
-  private lazy val PageTaskServices = wire[PageTaskServices]
-
-  private lazy val PatentStatisticServices = wire[PatentStatisticServices]
-  private lazy val PatentStatistic = wire[PatentStatistic]
-
-  private lazy val PatentTempServices = wire[PatentTempServices]
-  private lazy val PatentTemp = wire[PatentTemp]
-
-  private lazy val HtmlTemplate = wire[HtmlTemplate]
-  private lazy val CacheTimeUpdater = wire[CacheTimeUpdater]*/
 
   // Router
   override lazy val router = {
