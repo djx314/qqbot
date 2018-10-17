@@ -9,15 +9,15 @@ import scala.util.Success
 case class SimpleInfo(post_type: String, message_type: String)
 
 @JsonCodec
-case class Sender(nickname: String, sex: String, age: Int)
+case class Sender(nickname: String, sex: String, age: Int, user_id: Long)
 
 @JsonCodec
 case class SiLiao(
     post_type: String
   , message_type: String
   , sub_type: String
-  , message_id: Int
-  , user_id: Int
+  , message_id: Long
+  , user_id: Long
   , message: String
   , raw_message: String
   , font: Int
@@ -29,9 +29,9 @@ case class QunXiaoXi(
     post_type: String
   , message_type: String
   , sub_type: String
-  , message_id: Int
-  , group_id: Int
-  , user_id: Int
+  , message_id: Long
+  , group_id: Long
+  , user_id: Long
   , message: String
   , raw_message: String
   , font: Int
@@ -69,24 +69,27 @@ sealed trait SendMessageContect {
 
 @JsonCodec
 case class SendUserMessage(
-    override val message_type: String = "private"
-  , user_id: Int
+    user_id: Long
   , override val message: String
   , override val auto_escape: Boolean = false
-) extends SendMessageContect
+) extends SendMessageContect {
+  override val message_type: String = "private"
+}
 
 @JsonCodec
 case class SendGroupMessage(
-    override val message_type: String = "group"
-  , group_id: Int
+    group_id: Long
   , override val message: String
   , override val auto_escape: Boolean = false
-) extends SendMessageContect
+) extends SendMessageContect {
+  override val message_type: String = "group"
+}
 
 @JsonCodec
 case class SendDiscussMessage(
-    override val message_type: String = "discuss"
-  , discuss_id: Int
+    discuss_id: Long
   , override val message: String
   , override val auto_escape: Boolean = false
-) extends SendMessageContect
+) extends SendMessageContect {
+  override val message_type: String = "discuss"
+}

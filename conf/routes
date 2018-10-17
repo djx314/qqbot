@@ -9,3 +9,5 @@ GET     /create   archer.controllers.CommonAssetsController.createTable
 GET     /clean   archer.controllers.CommonAssetsController.cleanTable
 
 GET /random archer.controllers.CommonAssetsController.random
+
+GET /niubi_random archer.controllers.CommonAssetsController.niubiRandom(message: String)

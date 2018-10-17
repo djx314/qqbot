@@ -14,6 +14,8 @@ libraryDependencies ++= Seq(
   , "com.h2database"     % "h2"              % "1.4.197"
 )
 
+libraryDependencies += "net.coobird" % "thumbnailator" % "0.4.8"
+
 libraryDependencies ++= Seq(
     "com.softwaremill.macwire" %% "macros"     % "2.3.0" % "provided"
   , "com.softwaremill.macwire" %% "macrosakka" % "2.3.0" % "provided"

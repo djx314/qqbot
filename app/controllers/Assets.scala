@@ -1,6 +1,6 @@
 package assist.controllers
 
-import java.net.URL
+import java.net.{URL, URLEncoder}
 import java.nio.file.{Files, Paths}
 import java.util.UUID
 
@@ -86,10 +86,75 @@ class Assets(
 
   val atPrefix = "[CQ:at,qq="
 
+  @tailrec
+  final def dropCq(content: String): String = {
+    val index = content.indexOf("[CQ:")
+    if (index >= 0) {
+      val newMsg1  = content.take(index)
+      val dropMsg2 = content.drop(index)
+      val tailMsg3 = dropMsg2.dropWhile(s => s != ']').drop(1)
+      dropCq(newMsg1 + tailMsg3)
+    } else content
+  }
+
   def qqbotEvent = Action.async(circe.json[PostType]) { implicit request =>
-    logger.info(request.body.toString)
     request.body match {
-      case siLiao: SiLiao if siLiao.message.indexOf("批量录入") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 && siLiao.user_id == 909134790 =>
+      case siLiao: SiLiao if siLiao.message.indexOf("批量录入牛逼") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 && siLiao.user_id == 909134790L =>
+        @tailrec
+        def getUrls(str: String, contents: List[Array[Byte]]): List[Array[Byte]] = {
+          val index = str.indexOf(urlPrefix)
+          if (index >= 0) {
+            val fileUrl = str.drop(index + urlPrefix.size)
+            val left    = fileUrl.dropWhile(s => s != ',')
+            val url     = fileUrl.takeWhile(s => s != ',')
+            println(left)
+            getUrls(left, getPicByteFromUrl(url) :: contents)
+          } else
+            contents
+        }
+
+        val pics = getUrls(siLiao.message, List.empty)
+
+        dbConfig.db
+          .run(NiubiImageTable ++= pics.map(arr => NiubiImage(id = -1, imageContent = arr)))
+          .flatMap { row: Option[Int] =>
+            row match {
+              case Some(r) =>
+                sendMessage(SendUserMessage(user_id = siLiao.user_id, message = s"录入${siLiao.sender.nickname}的${r}张牛逼图片成功"))
+              case _ =>
+                sendMessage(SendUserMessage(user_id = siLiao.user_id, message = s"录入牛逼图片失败"))
+            }
+          }
+          .recover {
+            case e: Exception => e.printStackTrace
+          }
+
+      case siLiao: SiLiao if (siLiao.message.indexOf("牛逼") >= 0) || (siLiao.message.indexOf("冰冰") >= 0) =>
+        logger.info("http://127.0.0.1:9394/niubi_random?message=" + URLEncoder.encode(siLiao.message, "utf-8"))
+        val newMsg = dropCq(siLiao.message)
+
+        sendMessage(
+            SendUserMessage(
+              user_id = siLiao.user_id
+            , message = s"""[CQ:image,file=${imageDir}/${getPicFromUrl(
+                new URL("http://127.0.0.1:9394/niubi_random?message=" + URLEncoder.encode(newMsg, "utf-8"))
+            )}]"""
+          )
+        )
+
+      case qunXiaoxi: QunXiaoXi if (qunXiaoxi.message.indexOf("牛逼") >= 0) || (qunXiaoxi.message.indexOf("冰冰") >= 0) =>
+        logger.info("http://127.0.0.1:9394/niubi_random?message=" + URLEncoder.encode(qunXiaoxi.message, "utf-8"))
+        val newMsg = dropCq(qunXiaoxi.message)
+        sendMessage(
+            SendGroupMessage(
+              group_id = qunXiaoxi.group_id
+            , message = s"""[CQ:image,file=${imageDir}/${getPicFromUrl(
+                new URL("http://127.0.0.1:9394/niubi_random?message=" + URLEncoder.encode(newMsg, "utf-8"))
+            )}]"""
+          )
+        )
+
+      case siLiao: SiLiao if siLiao.message.indexOf("批量录入") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 && siLiao.user_id == 909134790L =>
         @tailrec
         def getUrls(str: String, contents: List[Array[Byte]]): List[Array[Byte]] = {
           val index = str.indexOf(urlPrefix)
@@ -119,7 +184,7 @@ class Assets(
             case e: Exception => e.printStackTrace
           }
 
-      case siLiao: SiLiao if siLiao.message.indexOf("录入") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 && siLiao.user_id == 909134790 =>
+      case siLiao: SiLiao if siLiao.message.indexOf("录入") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 && siLiao.user_id == 909134790L =>
         val fileUrl = siLiao.message.drop(siLiao.message.indexOf(urlPrefix) + urlPrefix.size).takeWhile(s => s != ',')
         val arr     = getPicByteFromUrl(fileUrl)
         dbConfig.db.run(ImageTable += Image(id = -1, imageContent = arr)).flatMap { row: Int =>
@@ -140,16 +205,17 @@ class Assets(
         )
 
       case qunXiaoXi: QunXiaoXi if qunXiaoXi.message.trim == "谁是傻逼" =>
-        if (qunXiaoXi.user_id == 909134790) {
+        val response: Future[WSResponse] = if (qunXiaoXi.user_id == 909134790L) {
           sendMessage(SendGroupMessage(group_id = qunXiaoXi.group_id, message = "我是傻逼"))
         } else {
           sendMessage(SendGroupMessage(group_id = qunXiaoXi.group_id, message = "你才是傻逼"))
         }
+        response
 
       case qunXiaoXi: QunXiaoXi if qunXiaoXi.message.trim == "抱抱我" =>
         sendMessage(SendGroupMessage(group_id = qunXiaoXi.group_id, message = s"抱抱${qunXiaoXi.sender.nickname}"))
 
-      case qunXiaoXi: QunXiaoXi if (qunXiaoXi.message.trim == "语录") && (qunXiaoXi.group_id == 174651452) =>
+      case qunXiaoXi: QunXiaoXi if (qunXiaoXi.message.trim == "语录") && (qunXiaoXi.group_id == 174651452L) =>
         sendMessage(
             SendGroupMessage(
               group_id = qunXiaoXi.group_id
@@ -161,7 +227,7 @@ class Assets(
         sendMessage(
             SendGroupMessage(
               group_id = qunXiaoXi.group_id
-            , message = s"""喵,艾特我干嘛?[CQ:at,qq=${qunXiaoXi.user_id}]"""
+            , message = s"""喵?艾特我干嘛?[CQ:at,qq=${qunXiaoXi.user_id}]"""
           )
         )
       /*case qunXiaoXi: QunXiaoXi if qunXiaoXi.message.indexOf("录入") >= 0 && qunXiaoXi.message.indexOf(imagePrefix) >= 0 =>
