@@ -98,6 +98,7 @@ class Assets(
   }
 
   def qqbotEvent = Action.async(circe.json[PostType]) { implicit request =>
+    logger.info(request.body.toString)
     request.body match {
       case siLiao: SiLiao if siLiao.message.indexOf("批量录入牛逼") >= 0 && siLiao.message.indexOf(imagePrefix) >= 0 && siLiao.user_id == 909134790L =>
         @tailrec
@@ -142,7 +143,8 @@ class Assets(
           )
         )
 
-      case qunXiaoxi: QunXiaoXi if (qunXiaoxi.message.indexOf("牛逼") >= 0) || (qunXiaoxi.message.indexOf("冰冰") >= 0) =>
+      case qunXiaoxi: QunXiaoXi
+          if (qunXiaoxi.message.indexOf("牛逼") >= 0) || (qunXiaoxi.message.indexOf("冰冰") >= 0) || (qunXiaoxi.message.indexOf("冰酱酱") >= 0) =>
         logger.info("http://127.0.0.1:9394/niubi_random?message=" + URLEncoder.encode(qunXiaoxi.message, "utf-8"))
         val newMsg = dropCq(qunXiaoxi.message)
         sendMessage(
